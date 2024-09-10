@@ -466,7 +466,7 @@
       "a": 255
     },
     "_spriteFrame": {
-      "__uuid__": "e671f64b-2065-4a1d-b96d-b9130f789465@f9941",
+      "__uuid__": "117b5a75-d8ab-4887-a8a9-c9bc6bd4234d@f9941",
       "__expectedType__": "cc.SpriteFrame"
     },
     "_type": 0,
@@ -1044,7 +1044,7 @@
     "_overflow": 0,
     "_enableWrapText": true,
     "_font": {
-      "__uuid__": "2863368a-8c4c-4342-8180-f1fb9ca6e1f8",
+      "__uuid__": "255d10dd-ce93-43ef-9338-4bfa2b2fa78f",
       "__expectedType__": "cc.LabelAtlas"
     },
     "_isSystemFontUsed": false,
@@ -2221,7 +2221,7 @@
     "_overflow": 0,
     "_enableWrapText": true,
     "_font": {
-      "__uuid__": "2863368a-8c4c-4342-8180-f1fb9ca6e1f8",
+      "__uuid__": "255d10dd-ce93-43ef-9338-4bfa2b2fa78f",
       "__expectedType__": "cc.LabelAtlas"
     },
     "_isSystemFontUsed": false,

@@ -1,1 +1,0 @@
-Editor.Panel.extend(Editor.require("packages://protobuf-creator/panel/panel.2d.js"));
