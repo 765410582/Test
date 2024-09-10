@@ -1,0 +1,13 @@
+{
+  "name": "Test",
+  "uuid": "c5a5a63a-07ec-4d84-8f45-30075097ac09",
+  "creator": {
+    "version": "3.7.3"
+  },
+  "dependencies": {
+    "@walletconnect/core": "^2.14.0",
+    "@walletconnect/web3wallet": "^1.13.0",
+    "crypto-es": "^2.1.0",
+    "protobufjs": "^7.3.2"
+  }
+}

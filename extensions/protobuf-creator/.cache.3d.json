@@ -1,0 +1,11 @@
+{
+    "optionLong": false,
+    "optionCreate": true,
+    "optionLimit": true,
+    "optionVerify": true,
+    "watchUpdate": false,
+    "filter": "\\.proto$",
+    "fileName": "Test",
+    "input": "E:\\Games\\Test\\assets\\proto",
+    "output": "E:\\Games\\Test\\assets\\convert"
+}

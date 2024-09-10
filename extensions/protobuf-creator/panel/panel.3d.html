@@ -1,0 +1,47 @@
+<div id="root">
+    <div class="form">
+        <ui-section :header="t('form.firstTitle')" expand>
+            <ui-prop>
+                <ui-label slot="label">{{t('form.output')}}</ui-label>
+                <div slot="content" class="inline">
+                    <ui-input :value="output" readonly></ui-input>
+                    <ui-button @confirm="selectDirImport">{{t('selectDirImport')}}</ui-button>
+                </div>
+            </ui-prop>
+        </ui-section>
+        <ui-section :header="t('form.secondTitle')" expand>
+            <ui-prop>
+                <ui-label slot="label">{{t('form.fileName')}}</ui-label>
+                <div slot="content" class="inline">
+                    <span class="tip">protobuf</span>
+                    <span class="tip">+</span>
+                    <ui-input ref="fileName" @input="onChange('fileName')"></ui-input>
+                </div>
+            </ui-prop>             
+            <ui-prop>
+                <ui-lable slot="label">{{t('form.options')}}</ui-lable>
+                <div slot="content">
+                    <ui-checkbox :checked="optionLong" @change="onCheckbox('optionLong')">{{t('form.optionLong')}}</ui-checkbox>                    
+                    <ui-checkbox :checked="optionCreate" @change="onCheckbox('optionCreate')">{{t('form.optionCreate')}}</ui-checkbox>
+                    <ui-checkbox :checked="optionLimit" @change="onCheckbox('optionLimit')">{{t('form.optionLimit')}}</ui-checkbox>
+                    <ui-checkbox :checked="optionVerify" @change="onCheckbox('optionVerify')">{{t('form.optionVerify')}}</ui-checkbox>
+                    <ui-checkbox :checked="watchUpdate" @change="onCheckbox('watchUpdate')">{{t('form.watchUpdate')}}</ui-checkbox>
+                </div>
+            </ui-prop>
+            <ui-prop>
+                <ui-label slot="label">{{t('form.fileFilter')}}</ui-label>
+                <ui-input slot="content" ref="filter" @input="onChange('filter')"></ui-input>
+            </ui-prop>
+            <ui-prop>
+                <ui-label slot="label">{{t('form.input')}}</ui-label>
+                <div slot="content" class="inline">
+                    <ui-input :value="input" :placeholder="t('form.inputTip')" readonly></ui-input>
+                    <ui-button @confirm="selectInputDir">{{t('selectDir')}}</ui-button>
+                </div>                
+            </ui-prop>
+            <div class="commands">
+                <ui-button @confirm="execute">{{t('execute')}}</ui-button>
+            </div>                         
+        </ui-section>
+    </div>      
+</div>
