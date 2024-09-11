@@ -10,6 +10,38 @@ export const config = {
   ChessBoard: "ChessBoard",
   RedGreenLight:"RedGreenLight"
 }
+
+
+export const GameConfigData = [
+  {
+      type: config.SelectColor,
+      des: "测试选择颜色",
+      data: {
+          width: 31, height: 31, SpriteName: "item1",state:true
+      }
+  },
+  {
+      type: config.HeroTest,
+      des: "测试射击",
+      data: {
+          SpriteName: "item2",state:false
+      }
+  },
+  {
+      type: config.ChessBoard,
+      des: "测试消除",
+      data: {
+          SpriteName: "item3",state:false
+      }
+  },
+  {
+      type: config.RedGreenLight,
+      des: "测试三色灯",
+      data: {
+          SpriteName: "item4",state:false
+      }
+  }
+]
 export const EventType = {
   GameEnd: "GameEnd",
   MessageInfo:"MessageInfo"

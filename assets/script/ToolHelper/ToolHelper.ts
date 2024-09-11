@@ -210,6 +210,11 @@ export class ToolHelper extends Component {
         let mapPos: Vec3 = space.getComponent(UITransform)!.convertToNodeSpaceAR(worldPos);
         return mapPos;
     }
+
+    // 颜色取反
+    static getInverseColor(color: Color): Color {
+        return new Color(255 - color.r, 255 - color.g, 255 - color.b, color.a);
+    }
 }
 
 

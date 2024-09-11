@@ -2,41 +2,11 @@ import { _decorator, assetManager, Color, Component, Node, SpriteFrame, view } f
 import { ScrollListV } from '../test/ScrollListV';
 import { itemPrefab } from './itemPrefab';
 import { ToolHelper } from '../ToolHelper/ToolHelper';
-import { config } from '../TestMain';
+import { config, GameConfigData } from '../TestMain';
 import { LayerManager } from '../test/LayerManager';
 const { ccclass, property } = _decorator;
 
 
-const GameConfigData = [
-    {
-        type: config.SelectColor,
-        des: "测试选择颜色",
-        data: {
-            width: 31, height: 31, SpriteName: "item1",state:true
-        }
-    },
-    {
-        type: config.HeroTest,
-        des: "测试射击",
-        data: {
-            SpriteName: "item2",state:false
-        }
-    },
-    {
-        type: config.ChessBoard,
-        des: "测试消除",
-        data: {
-            SpriteName: "item3",state:false
-        }
-    },
-    {
-        type: config.RedGreenLight,
-        des: "测试三色灯",
-        data: {
-            SpriteName: "item4",state:false
-        }
-    }
-]
 
 @ccclass('GameListMgr')
 export class GameListMgr extends Component {
