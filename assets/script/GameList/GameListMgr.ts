@@ -6,21 +6,37 @@ import { config } from '../TestMain';
 import { LayerManager } from '../test/LayerManager';
 const { ccclass, property } = _decorator;
 
-let GameConfig = {
-    ["dasf0"]: { name: config.SelectColor, width: 31, height: 31, SpriteName: "item1", },
-    ["dasf1"]: { name: config.SelectColor, width: 15, height: 15, SpriteName: "item2" },
-    ["dasf2"]: { name: config.SelectColor, width: 25, height: 25, SpriteName: "item3" },
-    ["dasf3"]: { name: config.SelectColor, width: 27, height: 27, SpriteName: "item4" },
-    ["dasf4"]: { name: config.SelectColor, width: 17, height: 17, SpriteName: "item5" },
-    ["dasf5"]: { name: config.SelectColor, width: 16, height: 16, SpriteName: "item6" },
-    ["dasf6"]: { name: config.SelectColor, width: 22, height: 22, SpriteName: "item7" },
-    ["dasf8"]: { name: config.SelectColor, width: 45, height: 45, SpriteName: "item8" },
-    ["dasf9"]: { name: config.SelectColor, width: 46, height: 46, SpriteName: "item9" },
-    ["dasf10"]: { name: config.HeroTest, width: 46, height: 46, SpriteName: "item1" },
-    ["dasf11"]: { name: config.ChessBoard, width: 46, height: 46, SpriteName: "item1" },
 
-
-}
+const GameConfigData = [
+    {
+        type: config.SelectColor,
+        des: "测试选择颜色",
+        data: {
+            width: 31, height: 31, SpriteName: "item1",state:true
+        }
+    },
+    {
+        type: config.HeroTest,
+        des: "测试射击",
+        data: {
+            SpriteName: "item2",state:false
+        }
+    },
+    {
+        type: config.ChessBoard,
+        des: "测试消除",
+        data: {
+            SpriteName: "item3",state:false
+        }
+    },
+    {
+        type: config.RedGreenLight,
+        des: "测试三色灯",
+        data: {
+            SpriteName: "item4",state:false
+        }
+    }
+]
 
 @ccclass('GameListMgr')
 export class GameListMgr extends Component {
@@ -53,28 +69,33 @@ export class GameListMgr extends Component {
         this.scrollListCtrl.spaceY = 10;
     }
     addData() {
-        let arr = []
-        let keys = Object.keys(GameConfig);
+        let list = [];
         let itemRandom = ToolHelper.getRandomColor();
-        for (let i = 0, len = keys.length; i < len; i++) {
-            let color = new Color().fromHEX(itemRandom)
-            let height = 150;
-            arr.push({
-                SpriteName: GameConfig[keys[i]].SpriteName, value: GameConfig[keys[i]].name, height: height, color: color, cb: (data, curIndex, spriteFreme) => {
-                    LayerManager.Instance.show(data.value,
-                        {
-                            width: GameConfig[keys[curIndex]].width, height: GameConfig[keys[curIndex]].height,
-                            index: curIndex, SpriteName: GameConfig[keys[curIndex]].SpriteName
-                            , spriteFreme: spriteFreme
-                        }, () => {
-                            LayerManager.Instance.remove(config.GameList);
-                        });
-                },
-                spriteItem: this.map.get(GameConfig[keys[i]].SpriteName)
-
-            })
+        let height = 50;
+        for (let i = 0; i < GameConfigData.length; i++) {
+            let color = new Color().fromHEX(itemRandom);
+           let  itemHeight = 150 + Math.floor(Math.random() * height);
+            let data = GameConfigData[i].data;
+            let param = {
+                spriteItem: this.map.get(data.SpriteName),
+                color: color,
+                itemHeight: itemHeight,
+                type:GameConfigData[i].type,
+                cb: (data, index, spriteFrame) => {
+                    this.itemCb(Object.assign(data, {index:index}))
+                }
+            }
+            list.push(Object.assign(data, param));
         }
-        this.scrollListCtrl.setData(arr)
+        this.scrollListCtrl.setData(list)
+    }
+
+    itemCb(data) {
+        LayerManager.Instance.show(data.type,
+            data,
+            () => {
+                LayerManager.Instance.remove(config.GameList);
+            })
     }
 }
 

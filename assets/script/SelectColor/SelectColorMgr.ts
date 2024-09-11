@@ -173,7 +173,7 @@ export class SelectColorMgr extends Component {
         this.targetColors = [];
         this.colorLabel = [];
 
-        let [pixels, baseColor, baseColorMap] = ToolHelper.getLoadPixels(this.data.spriteFreme, FIX_ITEM_WIDTH, FIX_ITEM_HEIGHT);
+        let [pixels, baseColor, baseColorMap] = ToolHelper.getLoadPixels(this.data.spriteItem, FIX_ITEM_WIDTH, FIX_ITEM_HEIGHT);
         [this.baseColor, this.baseColorMap] = [baseColor, baseColorMap];
         let minx = Math.floor((FIX_ITEM_WIDTH - pixels.length) / 2)
         let miny = Math.floor((FIX_ITEM_HEIGHT - pixels[0].length) / 2)

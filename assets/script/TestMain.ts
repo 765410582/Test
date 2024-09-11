@@ -7,7 +7,8 @@ export const config = {
   GameList: "GameList",
   SelectColor: "SelectColor",
   HeroTest: "HeroTest",
-  ChessBoard: "ChessBoard"
+  ChessBoard: "ChessBoard",
+  RedGreenLight:"RedGreenLight"
 }
 export const EventType = {
   GameEnd: "GameEnd",

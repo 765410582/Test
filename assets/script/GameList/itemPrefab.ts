@@ -15,22 +15,27 @@ export class itemPrefab extends Component implements IItem {
     label: Label;
     sprite: Sprite;
     sprite1: Sprite;
+    retryButton: Node;
+    delButton: Node;
     protected onLoad(): void {
         this.label = this.node.getChildByName("Label").getComponent(Label);
         this.sprite = this.node.getChildByName("Sprite").getComponent(Sprite);
         this.sprite1 = this.node.getChildByName("icon").getComponent(Sprite);
-        let retryButton = this.node.getChildByName("retryButton")
-        let delButton=this.node.getChildByName("delButton");
-        retryButton.on('click', this.onRetryData, this)
-        delButton.on('click', this.onDelData, this)
+        this.retryButton = this.node.getChildByName("retryButton")
+        this.delButton = this.node.getChildByName("delButton");
+        this.retryButton.on('click', this.onRetryData, this)
+        this.delButton.on('click', this.onDelData, this)
         this.sprite.node.on('click', this.onClick, this)
     }
     public dataChanged() {
         this.label.string = `Level ${this.itemIndex}`;
         let nodeTransform = this.node.getComponent(UITransform)
-        nodeTransform.contentSize = new Size(nodeTransform.contentSize.width, this.data.height);
+        nodeTransform.contentSize = new Size(nodeTransform.contentSize.width, this.data.itemHeight);
         this.sprite.color = this.data.color;
-       this.sprite1.spriteFrame=this.data.spriteItem;
+        this.sprite1.spriteFrame = this.data.spriteItem;
+        let state = this.data.state;
+        this.retryButton.active = state;
+        this.delButton.active = state;
     }
     public onClick() {
         if (typeof this.data.cb == "function") {
@@ -49,7 +54,7 @@ export class itemPrefab extends Component implements IItem {
         sys.localStorage.setItem(levelKey, value);
     }
     public onDelData() {
-        let levelKey = 'level' + this.itemIndex
+        let levelKey = 'level' + this.itemIndex;
         let levelData = {
             value: null,
             state: SaveStatus.UNFINISH//-1未开始 0:未完成 1:已完成  
