@@ -8,7 +8,7 @@ export class TrafficLight  {
         this._currentIndex = 0;
         this._time = Date.now()
           // 初始化日志
-          console.log(`LightManager created at ${new Date(this._time).toISOString()}`);
+        console.log(`LightManager created at ${new Date(this._time).toISOString()}`);
     }
     _update() {
         let loopCount=0;
@@ -35,7 +35,7 @@ export class TrafficLight  {
 
     getTrafficLight() {
         this._update();
-        return { color: this._currectLigth.color, reman: this._currectLigth.last - this._disTime() };
+        return { color: this._currectLigth.color, reman: this._currectLigth.last - this._disTime()};
     }
 }
 
