@@ -5,5 +5,11 @@
   "_sourceId": "c30b28da-749e-479b-bcb6-cecd8d7be9e3",
   "creator": {
     "version": "3.7.3"
+  },
+  "dependencies": {
+    "hanzi-writer": "^3.7.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.5.5"
   }
 }

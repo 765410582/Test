@@ -71,6 +71,7 @@ export class RedGreenLightMgr extends Component {
                 item.color = Color.GRAY;
             }
         }
+        
     }
 }
 
