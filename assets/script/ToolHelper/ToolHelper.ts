@@ -147,7 +147,7 @@ export class ToolHelper extends Component {
      *          2. baseColor：所有区域中独特的颜色集合。
      *          3. baseColorMap：映射每个区域颜色到基本颜色的索引。
      */
-    static getLoadPixels(spriteFrame: SpriteFrame, maxx = 15, maxy = 15, colorSetoff = 20):[any[],any[],Map<number, Color>] {
+    static getLoadPixels(spriteFrame: SpriteFrame, maxx = 15, maxy = 15, colorSetoff = 20): [any[], any[], Map<number, Color>] {
         if (!spriteFrame || typeof spriteFrame.width !== 'number') {
             throw new Error("Invalid spriteFrame object.");
         }
@@ -197,7 +197,7 @@ export class ToolHelper extends Component {
     }
 
     // 两个数组去掉重复的元素后随机取一个元素
-  static getListRanodm(list1: any[], list2: any[]) {
+    static getListRanodm(list1: any[], list2: any[]) {
         let newList = list1.concat(list2);
         let uniqueList = newList.filter((item, index) => newList.indexOf(item) === index);
         let randomIndex = Math.floor(Math.random() * uniqueList.length);
@@ -215,6 +215,45 @@ export class ToolHelper extends Component {
     static getInverseColor(color: Color): Color {
         return new Color(255 - color.r, 255 - color.g, 255 - color.b, color.a);
     }
+
+
+    /**
+     * 判断一个字符是否为中文字符
+     * 
+     * @param char 待判断的字符，预期输入为单个字符字符串
+     * @returns 返回布尔值，表示字符是否为中文字符
+     * 
+     * 本函数使用正则表达式来匹配字符是否属于中文范围
+     * 中文字符的Unicode范围为[\u4e00-\u9fa5]
+     * 使用正则表达式测试字符是否符合该范围，从而判断其是否为中文字符
+     */
+    static isChineseCharacter(char: string): boolean {
+        const chineseRegex = /^[\u4e00-\u9fa5]$/;
+        return chineseRegex.test(char);
+    }
+
+    /**
+ * 检查字符串是否全部由汉字组成
+ * 
+ * 此函数使用正则表达式来验证输入的字符串是否每一个字符都是汉字
+ * 正则表达式的范围 [\u4e00-\u9fa5] 匹配所有汉字字符
+ * 
+ * @param str 要检查的字符串
+ * @returns 如果字符串全部由汉字组成，则返回 true；否则返回 false
+ */ 
+    static areAllChineseCharacters(str: string): boolean {
+        const chineseRegex = /^[\u4e00-\u9fa5]+$/;
+        return chineseRegex.test(str);
+    }
 }
 
-
+export class mayThrowError {
+    name: string;
+    message: any;
+    stack: string;
+    constructor(message) {
+      this.name = "错误"
+      this.message = message
+      alert("当前功能没有开发");
+    }
+  }
