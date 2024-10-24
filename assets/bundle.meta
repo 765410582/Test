@@ -11,6 +11,6 @@
       "web-desktop": true
     },
     "isBundle": true,
-    "bundleName": "bundle"
+    "bundleName": "bundleA"
   }
 }

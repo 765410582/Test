@@ -37,7 +37,7 @@
     },
     "_lpos": {
       "__type__": "cc.Vec3",
-      "x": 0,
+      "x": -1000,
       "y": 0,
       "z": 0
     },
@@ -77,7 +77,7 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 26,
+      "width": 50,
       "height": 26
     },
     "_anchorPoint": {
@@ -118,7 +118,7 @@
     },
     "_type": 0,
     "_fillType": 0,
-    "_sizeMode": 1,
+    "_sizeMode": 0,
     "_fillCenter": {
       "__type__": "cc.Vec2",
       "x": 0,
@@ -159,7 +159,7 @@
     },
     "_size": {
       "__type__": "cc.Size",
-      "width": 26,
+      "width": 50,
       "height": 26
     },
     "_id": ""
