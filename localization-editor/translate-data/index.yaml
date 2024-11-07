@@ -1,0 +1,88 @@
+locale: index
+items:
+  loading:
+    key: loading
+    value: ""
+    type: 4
+    isVariant: false
+    associations: []
+    _variants: []
+  needtime:
+    key: needtime
+    value: ""
+    type: 4
+    isVariant: false
+    associations: []
+    _variants: []
+  aap+o6tChCn4z4QqFrTwaw:
+    key: aap+o6tChCn4z4QqFrTwaw
+    value: ""
+    type: 2
+    isVariant: false
+    associations:
+      - sceneUuid: f76a7418-a0fd-4581-b3a2-f7f06dfd7d2b
+        nodeUuid: cenUNIDW1FM4gWmBBAgZ5Y
+        reference: f76a7418-a0fd-4581-b3a2-f7f06dfd7d2b
+    _variants: []
+  9feec464-adc0-4bb9-9158-203ddb83ecdc:
+    key: 9feec464-adc0-4bb9-9158-203ddb83ecdc
+    value: ""
+    type: 1
+    isVariant: false
+    associations:
+      - reference: 9feec464-adc0-4bb9-9158-203ddb83ecdc
+    _variants: []
+  26eb0at73NICIVz2CimAWN2:
+    key: 26eb0at73NICIVz2CimAWN2
+    value: ""
+    type: 2
+    isVariant: false
+    associations:
+      - sceneUuid: 94a1ce7b-b76f-4102-8520-9c59d25e4bd6
+        nodeUuid: d4KElq6AxOKqFFrkFr/Ddk
+        reference: 94a1ce7b-b76f-4102-8520-9c59d25e4bd6
+    _variants: []
+  f1a43qE9IpCp6ALinlgBQx9:
+    key: f1a43qE9IpCp6ALinlgBQx9
+    value: ""
+    type: 2
+    isVariant: false
+    associations:
+      - sceneUuid: 5fa86927-9db6-4099-96e3-e4d67287cff6
+        nodeUuid: 262134M7FLyLbM9u1y0RVD
+        reference: 5fa86927-9db6-4099-96e3-e4d67287cff6
+    _variants: []
+  gamelisttitle:
+    key: gamelisttitle
+    value: ""
+    type: 4
+    isVariant: false
+    associations: []
+    _variants: []
+  return:
+    key: return
+    value: ""
+    type: 4
+    isVariant: false
+    associations: []
+    _variants: []
+  time:
+    key: time
+    value: ""
+    type: 4
+    isVariant: false
+    associations: []
+    _variants: []
+  write:
+    key: write
+    value: ""
+    type: 4
+    isVariant: false
+    associations: []
+    _variants: []
+languageConfig:
+  bcp47Tag: index
+  translateFinished: 3
+  translateTotal: 0
+  compileFinished: 0
+  compileTotal: 0

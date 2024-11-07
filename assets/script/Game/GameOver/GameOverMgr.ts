@@ -10,6 +10,7 @@ export class GameOverMgr extends Component {
     confrme:Node;
     cancel:Node;
     param: any;
+    titleLabel: Label;
     init(param?) {
         this.param = param;
         this.regiterUI();
@@ -17,6 +18,7 @@ export class GameOverMgr extends Component {
 
     regiterUI() {
         this.textLabel=this.node.getChildByName("textLabel").getComponent(Label);
+        this.titleLabel=this.node.getChildByName("titleLabel").getComponent(Label);
         this.back=this.node.getChildByName("back");
         this.confrme=this.node.getChildByName("confrme");
         this.cancel=this.node.getChildByName("cancel");
@@ -33,6 +35,8 @@ export class GameOverMgr extends Component {
             InsMgr.layer.hide(UIID.GameOver);
             this.param.cb&&this.param.cb(true);
         })
+
+        this.titleLabel.string="结算页面"
 
         this.textLabel.string=this.param.text;
     }

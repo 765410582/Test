@@ -1,0 +1,36 @@
+locale: en-US
+items:
+  loading:
+    key: loading
+    value: 加载中
+    type: 4
+    isVariant: false
+    associations: []
+    _variants: []
+  needtime:
+    key: needtime
+    value: "预计还需要: ${0} 毫秒"
+    type: 4
+    isVariant: false
+    associations: []
+    _variants: []
+  gamelisttitle:
+    key: gamelisttitle
+    value: 游戏列表
+    type: 4
+    isVariant: false
+    associations: []
+    _variants: []
+  return:
+    key: return
+    value: Reture
+    type: 4
+    isVariant: false
+    associations: []
+    _variants: []
+languageConfig:
+  bcp47Tag: en-US
+  translateFinished: 0
+  translateTotal: 0
+  compileFinished: 0
+  compileTotal: 4

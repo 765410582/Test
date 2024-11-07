@@ -1,6 +1,6 @@
 import { _decorator, Component, director, Label, Node } from 'cc';
 import { InsMgr } from './InsMgr';
-import { EventType } from '../TestMain';
+import { l10n } from 'db://localization-editor/l10n'
 const { ccclass, property } = _decorator;
 
 export enum TimeType{
@@ -27,7 +27,7 @@ export class GameTime extends Component {
         this._time = v;
         if(this._update_time<=this._time){
             this._update_time=parseInt(this.time.toString())
-            this.timeLabel.string="TIME:"+this._update_time+"s"
+            this.timeLabel.string=l10n.t("time")+this._update_time+"s"
         }
         this.updateOtherTime();
     }
@@ -46,7 +46,7 @@ export class GameTime extends Component {
     }
 
     setTaskTime(key:TimeType,data:ITimeData){
-        data.time=Math.floor(data.time+this.time);
+        data.time=data.time+this.time;
         this._task_time.push(data)
     }
 

@@ -1,10 +1,11 @@
-import { __private, _decorator, Color, Component, director, EventTouch, gfx, Node, Rect, Sprite, SpriteFrame, Texture2D, tween, UITransform, v3, Vec3, Widget } from 'cc';
+import { __private, _decorator, Color, Component, director, EventTouch, gfx, Label, Node, Rect, Sprite, SpriteFrame, Texture2D, tween, UITransform, v3, Vec3, Widget } from 'cc';
 import { ReNodeData } from '../ConfigData';
 import { EventMgr } from '../../frame/EventMgr';
 import { EventType } from '../../TestMain';
 import { LayerType, UIConfigData, UIID } from '../ViewConfig';
 import { NextLayer } from '../../frame/LayerManager';
 import { InsMgr } from '../../frame/InsMgr';
+import { l10n } from 'db://localization-editor/l10n'
 const { ccclass, property } = _decorator;
 
 @ccclass('ToolHelper')
@@ -274,6 +275,7 @@ export class ToolHelper extends Component {
      * */
     reBtnCall(node, cb = null) {
         this.nodealign(node, ReNodeData);
+        node.getChildByName("Label").getComponent(Label).string=l10n.t("return");
         node.on("click", () => {
             this.layerEnd(cb)
         });
@@ -336,6 +338,12 @@ export class ToolHelper extends Component {
         const dz = pos1.z - pos2.z;
         return Math.sqrt(dx * dx + dy * dy + dz * dz);
     }
+
+    splitArray<T>(arr: T[], index: number): [T[], T[]] {
+        const firstPart = arr.slice(0, index);
+        const secondPart = arr.slice(index);
+        return [firstPart, secondPart];
+      }
 }
 
 export class mayThrowError {

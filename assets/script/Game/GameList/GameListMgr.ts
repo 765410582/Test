@@ -3,6 +3,7 @@ import { itemPrefab } from './itemPrefab';
 import { LayerManager } from '../../frame/LayerManager';
 import { UIID } from '../../main/ViewConfig';
 import { InsMgr } from '../../frame/InsMgr';
+import { l10n } from 'db://localization-editor/l10n'
 const { ccclass, property } = _decorator;
 
 @ccclass('GameListMgr')
@@ -15,10 +16,12 @@ export class GameListMgr extends Component {
         this.scorllNode = this.node.getChildByName("ScrollView");
         this.item = this.node.getChildByName("Item");
         this.titleLabel = this.node.getChildByName("titleLabel").getComponent(Label);
-        this.titleLabel.string = "GAMELIST";
+        this.titleLabel.string = l10n.t("gamelisttitle");
         this.scrollListCtrl = this.scorllNode.getComponent(ScrollView)
         this.addData();
-        
+
+        InsMgr.data.print();
+
     }
     addData() {
         let dataArray = [
@@ -27,7 +30,7 @@ export class GameListMgr extends Component {
             , UIID.HeroTest
             , UIID.RedGreenLight
             , UIID.SelectColor
-            ,UIID.Tetris
+            , UIID.Tetris
         ];
         let randomColor = [
             "#fd6d6c"
@@ -35,15 +38,15 @@ export class GameListMgr extends Component {
             , "#4ccc31"
             , "#da68ff"
         ]
-        let len=dataArray.length;
-        for (let i = 0; i <len; i++) {
+        let len = dataArray.length;
+        for (let i = 0; i < len; i++) {
             let color = new Color().fromHEX(randomColor[Math.floor(Math.random() * randomColor.length)]);
             let param = {
                 color: color,
                 type: dataArray[i],
-                itemIndex:i,
+                itemIndex: i,
                 cb: (data, index, spriteFrame) => {
-                    this.itemCb(Object.assign(data, { index: index,background:spriteFrame }))
+                    this.itemCb(Object.assign(data, { index: index, background: spriteFrame }))
                 }
             }
             this.getItem(param);
@@ -51,7 +54,7 @@ export class GameListMgr extends Component {
     }
 
     protected getItem(param) {
-        let node= instantiate(this.item);
+        let node = instantiate(this.item);
         node.parent = this.scrollListCtrl.content;
         let titemPrefab = node.addComponent(itemPrefab)
         titemPrefab.data = param;
@@ -60,6 +63,10 @@ export class GameListMgr extends Component {
         return node;
     }
     itemCb(data) {
+        if (!data.type) {
+            console.log("type is null");
+            return;
+        }
         InsMgr.layer.show(data.type,
             data,
             () => {

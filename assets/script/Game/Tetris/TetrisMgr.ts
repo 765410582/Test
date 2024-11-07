@@ -1,12 +1,13 @@
-import { _decorator, Component, Graphics, Node, UITransform } from 'cc';
+import { _decorator, Component, Graphics, Label, Node, UITransform } from 'cc';
 import { InsMgr } from '../../frame/InsMgr';
 import { Tetris } from './Tetris';
 const { ccclass, property } = _decorator;
-
+import { l10n } from 'db://localization-editor/l10n'
 @ccclass('TetrisMgr')
 export class TetrisMgr extends Component {
     tetris: Tetris;
     GridLayer: Graphics;
+    titleLabel: Label;
     init(data?) {
        
         this.tetris = new Tetris(8, 13);
@@ -23,7 +24,8 @@ export class TetrisMgr extends Component {
     RegiterUI() {
         InsMgr.tool.reBtnCall(this.node.getChildByName("reBtn"));
         this.GridLayer = this.node.getChildByName("GridLayer").getComponent(Graphics)
-
+        this.titleLabel=this.node.getChildByName("titleLabel").getComponent(Label)
+        this.titleLabel.string=l10n.t("write");
         let {width,height}=this.node.getComponent(UITransform).contentSize
         let gridWidth = width / this.tetris.mapWidth;
         let gridHeight = height / this.tetris.mapHeight;
@@ -41,7 +43,6 @@ export class TetrisMgr extends Component {
             }
         }
         this.GridLayer.stroke();
-
     }
 
     update(deltaTime: number) {

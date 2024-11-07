@@ -35,6 +35,9 @@ export class DataDictionary<T> extends Component {
     size(): number {
         return this.entries.size;
     }
+    print(){
+        console.log("entries",this.entries);
+    }
 /**
  * 根据提供的谓词过滤字典条目。
  * @param predicate - 用于判断是否保留条目的函数。

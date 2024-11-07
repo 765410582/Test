@@ -179,13 +179,13 @@
     "__prefab": {
       "__id__": 9
     },
-    "enabledContactListener": false,
-    "bullet": false,
+    "enabledContactListener": true,
+    "bullet": true,
     "awakeOnLoad": true,
     "_group": 1,
     "_type": 1,
     "_allowSleep": true,
-    "_gravityScale": 0,
+    "_gravityScale": 1,
     "_linearDamping": 0,
     "_angularDamping": 0,
     "_linearVelocity": {
@@ -199,7 +199,7 @@
   },
   {
     "__type__": "cc.CompPrefabInfo",
-    "fileId": "f6feIa7plBorWv358SvSI+"
+    "fileId": "361W92xzJMDZxH6g8p1ffv"
   },
   {
     "__type__": "cc.PrefabInfo",

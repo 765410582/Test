@@ -2,7 +2,6 @@ import { _decorator, assetManager, Component, director, instantiate, Label, Pref
 import { NextLayer } from './frame/LayerManager';
 import { InsMgr } from './frame/InsMgr';
 import { UIID } from './main/ViewConfig';
-import { LoadingMgr } from './Game/Loading/LoadingMgr';
 
 export const EventType = {
   GameEnd: "GameEnd",
@@ -23,6 +22,7 @@ const { ccclass, property } = _decorator;
 export class TestMain extends Component {
 
   start() {
+  
     InsMgr.event.on(EventType.GameEnd, this.GameEnd);
     InsMgr.layer.createUILayer(() => {
       InsMgr.layer.show(UIID.Loading);

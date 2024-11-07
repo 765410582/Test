@@ -1,9 +1,9 @@
-import { _decorator, Collider2D, Component, Contact2DType, IPhysics2DContact, Node, TiledMap, tween, Tween, v3, Vec3 } from 'cc';
+import { _decorator, BoxCollider2D, Collider2D, Component, Contact2DType, IPhysics2DContact,RigidBody2D,v3, Vec3 } from 'cc';
 
 
-import { buttlet } from './buttlet';
 import { InsMgr } from '../../frame/InsMgr';
 import { HeroEvent } from './HeroTestMgr';
+import { buttlet } from './buttlet/buttlet';
 const { ccclass, property } = _decorator;
 @ccclass('enemy')
 export class enemy extends Component {
@@ -36,12 +36,13 @@ export class enemy extends Component {
 * @param  {Collider} self  产生碰撞的自身的碰撞组件
 */
     onBeginContact(selfCollider: Collider2D, otherCollider: Collider2D, contact: IPhysics2DContact | null) {
-        if (otherCollider.node.name == "buttlet") {
-            if (this.param.ph == -1000) return;
-            otherCollider.node.destroy()
-            this.param.ph -= otherCollider.node.getComponent(buttlet).Apk;
+        let otherNode=otherCollider.node
+        if (otherNode.name == "buttlet") {
+            let bullet=otherNode.getComponent(buttlet)
+            bullet.clearBullet();
+            this.param.ph -= bullet.Apk;
             if (this.param.ph <= 0) {
-                InsMgr.event.emit(HeroEvent.DIEENEMY, this.node);
+                InsMgr.event.emit(HeroEvent.DIEENEMY, {enemy:selfCollider.node});
             }
         }
     }

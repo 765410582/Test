@@ -2,6 +2,8 @@ import { _decorator, Asset, assetManager, Component, Label, Node, Prefab, Progre
 
 import { InsMgr } from '../../frame/InsMgr';
 import { UIConfigData, UIID } from '../../main/ViewConfig';
+
+import { l10n } from 'db://localization-editor/l10n'
 const loadData = [{ path: "prefab", type: Prefab, dec: "预制体", handle: "bundleA" }, { path: "ui", type: SpriteFrame, dec: "精灵贴图", handle: "bundleA" }, { path: "tex", type: Texture2D, dec: "图片原始数据", handle: "bundleA" }];
 const { ccclass, property } = _decorator;
 @ccclass('LoadingMgr')
@@ -45,14 +47,14 @@ export class LoadingMgr extends Component {
 
     set progress(v) {
         this._progress = v;
-        this.progressBar.progress = this._progress
+        this.progressBar.progress = this._progress;
         const elapsedTime = performance.now() - this.startTime; // 计算已耗时间
         if (v > 0) {
             this.totalTime = elapsedTime / v; // 估算总时间
         }
         const remainingTime = this.totalTime - elapsedTime; // 计算剩余时间
-        let time = `预计还需要: ${remainingTime.toFixed(2)} 毫秒`
-        this.barLabel.string ="loading " +Math.floor(this._progress * 100) + "%"+"\r\n\r\n"+time;
+        let time = l10n.t("needtime").replace("${0}", remainingTime.toFixed(0));
+        this.barLabel.string =l10n.t("loading") +Math.floor(this._progress * 100) + "%"+"\r\n\r\n"+time;
     }
 
     // 处理加载数据

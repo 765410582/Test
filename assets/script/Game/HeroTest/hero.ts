@@ -12,13 +12,7 @@ export class hero extends Component {
     init(param) {
         this.param=param;
         this.node.position=this.param.start;
-        for(let i=0;i<1000;i++){
-            InsMgr.time.setTaskTime(TimeType.HeroTouch,{
-                time:i+1,
-                event:HeroEvent.BUTTLET,
-                data:null,
-            });
-        }
+        
     }
     onUpdate(deltaTime: number) {
         this.spacingTime+=deltaTime;

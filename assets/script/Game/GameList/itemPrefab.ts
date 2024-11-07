@@ -1,4 +1,4 @@
-import { _decorator, assetManager, Color, Component, Label, Node, Size, Sprite, SpriteFrame, sys, UITransform } from 'cc';
+import { _decorator, assetManager, Color, Component, ImageAsset, Label, Node, Size, Sprite, SpriteFrame, sys, Texture2D, UITransform } from 'cc';
 import { IItem } from '../../frame/IItem';
 import { SaveStatus } from '../SelectColor/SelectColorMgr';
 import { InsMgr } from '../../frame/InsMgr';
@@ -22,19 +22,23 @@ export class itemPrefab extends Component implements IItem {
     }
     public dataChanged() {
         this.label.string = `<<${this.itemIndex}>`;
-        this.sprite.color = this.data.color;
-        let dic=InsMgr.data.find("ui"+this.itemIndex);
-        this.sprite.spriteFrame=<SpriteFrame>dic.value;
+        this.sprite.color =Color.WHITE;
+        let dic = InsMgr.data.find("tex" + this.itemIndex).value as Texture2D;
+        this.sprite.spriteFrame = <SpriteFrame>this.getSprieOnImage(dic);
+    }
+
+    getSprieOnImage(tex: Texture2D): SpriteFrame {
+        let sf = new SpriteFrame();
+        sf.texture = tex;
+        return sf;
     }
     public onClick() {
         if (typeof this.data.cb == "function") {
-            this.sprite.color = this.data.color;
-            let dic=InsMgr.data.find("ui"+this.itemIndex);
-            this.data.cb(this.data, this.itemIndex,<SpriteFrame>dic.value)
+            this.sprite.color =Color.GRAY;
+            let dic = InsMgr.data.find("ui" + this.itemIndex);
+            this.data.cb(this.data, this.itemIndex, <SpriteFrame>dic.value)
         }
     }
-
-  
 }
 
 

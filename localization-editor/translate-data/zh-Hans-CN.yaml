@@ -1,0 +1,67 @@
+locale: zh-Hans-CN
+items:
+  loading:
+    key: loading
+    value: 加载中
+    type: 4
+    isVariant: false
+    associations: []
+    _variants: []
+  needtime:
+    key: needtime
+    value: "预计还需要: ${0} 毫秒"
+    type: 4
+    isVariant: false
+    associations: []
+    _variants: []
+  9feec464-adc0-4bb9-9158-203ddb83ecdc:
+    key: 9feec464-adc0-4bb9-9158-203ddb83ecdc
+    value: 9feec464-adc0-4bb9-9158-203ddb83ecdc
+    type: 1
+    isVariant: false
+    associations: []
+    _variants: []
+  f1a43qE9IpCp6ALinlgBQx9:
+    key: f1a43qE9IpCp6ALinlgBQx9
+    value: ..
+    type: 2
+    isVariant: false
+    associations:
+      - sceneUuid: 5fa86927-9db6-4099-96e3-e4d67287cff6
+        nodeUuid: 262134M7FLyLbM9u1y0RVD
+        reference: 5fa86927-9db6-4099-96e3-e4d67287cff6
+    _variants: []
+  gamelisttitle:
+    key: gamelisttitle
+    value: 游戏列表
+    type: 4
+    isVariant: false
+    associations: []
+    _variants: []
+  return:
+    key: return
+    value: 返回
+    type: 4
+    isVariant: false
+    associations: []
+    _variants: []
+  time:
+    key: time
+    value: 时间
+    type: 4
+    isVariant: false
+    associations: []
+    _variants: []
+  write:
+    key: write
+    value: 毛笔写字
+    type: 4
+    isVariant: false
+    associations: []
+    _variants: []
+languageConfig:
+  bcp47Tag: zh-Hans-CN
+  translateFinished: 3
+  translateTotal: 3
+  compileFinished: 0
+  compileTotal: 8

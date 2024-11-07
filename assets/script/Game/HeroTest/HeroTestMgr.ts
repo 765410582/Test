@@ -1,25 +1,20 @@
-import { _decorator, assetManager, Component, instantiate, Label, Node, Prefab, Size, UITransform, v3, Vec2, Vec3 } from 'cc';
+import { _decorator, Component, instantiate, Label, Node,  Size, UITransform, v3 } from 'cc';
 
 import { enemy } from './enemy';
 import { hero } from './hero';
-import { buttlet } from './buttlet';
+
 import { InsMgr } from '../../frame/InsMgr';
 import { UIID } from '../../main/ViewConfig';
-import { time } from 'console';
-import { NextLayer } from '../../frame/LayerManager';
-import { EventType } from '../../TestMain';
-import { stat } from 'fs';
-
-
+import { TimeType } from '../../frame/GameTime';
+import { ButtletMgr } from './buttlet/ButtletMgr';
 const { ccclass, property } = _decorator;
-
 const GameData = {
     hero: {
         "1001": {
             id: "1001",
             ph: 100,
             time: 1,
-            att: 10,
+            att: 100,
 
             att_type: "",
             des: "普通英雄"
@@ -31,12 +26,12 @@ const GameData = {
             ph: 50,
             time: 3,
             speed: 50,
-            att: 10,
+            att: 100,
             distance: 300
         },
         "2002": {
             id: "2002",
-            ph: 50,
+            ph: 70,
             time: 1.5,
             speed: 30,
             att: 10,
@@ -64,24 +59,23 @@ const GameData = {
     jewel: [
         {
             id: "3001",
-
         }
     ]
 
 }
-
 export enum HeroEvent {
     BUTTLET = "BUTTLET",
     DIEENEMY = "DIEENEMY",
     ATTENEMY = "ATTENEMY",
     HEROEND = "HEROEND"
 }
+
+
 @ccclass('HeroTestMgr')
 export class HeroTestMgr extends Component {
     param = null;
     enemyList: Node[] = [];
     hero: Node;
-    buttletList: Node[] = [];
     boxSize: Size;
 
     enemyLabel: Label;
@@ -89,6 +83,10 @@ export class HeroTestMgr extends Component {
     buttletLevel: number = 1;
     _pause: boolean = true;
     die: boolean = true;
+    curAttTarget:Node=null;
+    enemyCount: number = 0;
+    enemyMax: number = 0;
+    buttletMgr: ButtletMgr;
     get isPause() {
         return this._pause;
     }
@@ -98,11 +96,14 @@ export class HeroTestMgr extends Component {
     }
     init(param?) {
         this.param = param;
+
+        this.buttletMgr=new ButtletMgr({test:this});
         this.boxSize = this.node.getComponent(UITransform).contentSize
         this.regiterUI();
         this.regiterEvent();
         this.regiterHero();
-        this.schedule(this.onUpdate, 1);
+     
+        this.addBitEnemy();
     }
 
     regiterUI() {
@@ -119,25 +120,24 @@ export class HeroTestMgr extends Component {
         InsMgr.event.on(HeroEvent.HEROEND, this.heroEnd, this);
     }
 
-    enemyCount: number = 0;
-    enemyMax: number = 100;
-    onUpdate(deltaTime: number) {
-        //浏览器兼容差
-        requestIdleCallback(dealline => {
-            if (dealline.timeRemaining() > 0.1) {
-                this.enemyCount++;
-                if (this.enemyCount < this.enemyMax) {
-                    this.addEnemy();
-                } else {
-                    console.log("下一个循环开始");
-                }
-            }
-        });
+    addBitEnemy(){
+        for(let i=0;i<100;i++){
+            InsMgr.time.setTaskTime(TimeType.HeroTouch,{
+                time:0.3*i,
+                event:HeroEvent.BUTTLET,
+                data:null,
+            });
+            this.enemyMax++;
+        }
+        this.updateEnemyLabel();
+
+        
     }
 
+    
 
     async regiterHero() {
-        let info = { handle: "handleA", prefab: "prefab/enemy" }
+        let info = { handle: "handleA", prefab: "prefab/enemy"}
         let prefab: any = await InsMgr.res.getPrefab(info);
         this.hero = instantiate(prefab);
         this.hero.parent = this.node;
@@ -173,35 +173,15 @@ export class HeroTestMgr extends Component {
         this.hero.getComponent(hero).updatePh(att);
     }
 
-    async addButtlet1(data) {
-        let info = { handle: "handleA", prefab: "prefab/buttlet" }
-        let prefab: any = await InsMgr.res.getPrefab(info);
-        let node = instantiate(prefab);
-        node.parent = this.node;
-        node.addComponent(buttlet).init(data);
-    }
 
     handlerEventButtlet(event, data) {
         if (!this.isPause) return;
-        let len = this.enemyList.length;
-        if (len <= 0) { return; }
-        let target = this.hero.position;
-        let nearest = this.enemyList[0].position;
-        let minDistance = InsMgr.tool.getDisance(nearest, target);
-        this.enemyList.forEach(item => {
-            let coordinate = item.position
-            const distance = InsMgr.tool.getDisance(coordinate, target);
-            if (distance < minDistance) {
-                minDistance = distance;
-                nearest = coordinate;
-            }
-        })
-        let size = this.node.getComponent(UITransform).contentSize;
-        this.addButtlet1({ start: target, nearest: nearest, order: size });
+        this.addEnemy();
     }
 
-    heroEnd(event, data) {
+   
 
+    heroEnd(event, data) {
         if (!this.die) {
             return;
         }
@@ -213,7 +193,6 @@ export class HeroTestMgr extends Component {
                 if (state) {
                     InsMgr.tool.layerEnd()
                 }
-
             }
         }));
     }
@@ -224,19 +203,25 @@ export class HeroTestMgr extends Component {
             tenemy.isPause = state;
         }
     }
-    
+
     updateEnemyLabel() {
-        this.enemyLabel.string = "Enemy Die:" + this.dieEnemy;
+        this.enemyLabel.string = "Enemy Die:" + this.dieEnemy+"/"+this.enemyMax;
     }
 
     clearEnemy(event, data) {
-        let len = this.enemyList.length;
-        this.enemyList = this.enemyList.filter(item => data !== item)
-        len = this.enemyList.length;
-        if (data) {
-            data.destroy();
-            this.dieEnemy++;
-            this.updateEnemyLabel();
+        if(data&&data.enemy){
+            this.enemyList = this.enemyList.filter(item => data.enemy !== item)
+            if (data.enemy) {
+                if(this.curAttTarget==data.enemy){
+                    this.curAttTarget=null;
+                }
+                data.enemy.destroy();
+                this.dieEnemy++;
+                this.updateEnemyLabel();
+                if(this.dieEnemy%100==0){
+                    this.addBitEnemy()
+                }
+            }
         }
     }
     protected onDestroy(): void {
@@ -244,6 +229,9 @@ export class HeroTestMgr extends Component {
         InsMgr.event.off(HeroEvent.DIEENEMY);
         InsMgr.event.off(HeroEvent.ATTENEMY);
         InsMgr.event.off(HeroEvent.HEROEND);
+        this.buttletMgr.onDestroy();
+        this.buttletMgr=null;
+        console.log("销毁 当前打豆豆面板");
     }
 }
 
