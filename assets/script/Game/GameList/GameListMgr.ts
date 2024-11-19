@@ -19,8 +19,8 @@ export class GameListMgr extends Component {
         this.titleLabel.string = l10n.t("gamelisttitle");
         this.scrollListCtrl = this.scorllNode.getComponent(ScrollView)
         this.addData();
-
-        let tdata=InsMgr.data.getUser("ui1",["description","key"]);
+        let tobj=InsMgr.data.getData("ui1")
+        let tdata=InsMgr.data.getUser(tobj,["description","key","value"]);
         console.log("tdata:",tdata);
 
     }
@@ -36,7 +36,7 @@ export class GameListMgr extends Component {
             , , , ,, , , ,, , , ,, , , ,, , , ,, , , ,
         ];
         let result = InsMgr.data.queryData(item => item.value.name.indexOf("item") != -1)
-        InsMgr.data.print();
+      
         for (let i = 0; i < result.length; i++) {
             let param = {
                 type: dataArray[i],

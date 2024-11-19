@@ -40,6 +40,7 @@ export class LoadingMgr extends Component {
     }
 
     private login() {
+        InsMgr.data.print();
         InsMgr.layer.show(UIID.GameList, null, () => {
             InsMgr.layer.hide(UIID.Loading);
             InsMgr.layer.hide(UIID.NetLoading);

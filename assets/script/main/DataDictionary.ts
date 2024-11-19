@@ -47,8 +47,8 @@ export class DataDictionary extends Component {
      * @param keys 指定需要提取的用户信息的键数组
      * @returns 返回一个仅包含指定键对应值的用户信息对象
      */
-    getUser<T extends keyof ResData>(id, keys: T[]): Pick<ResData, T> {
-        let value = this.entries.get(id)
+    getUser<T extends keyof ResData>(value, keys: T[]): Pick<ResData, T> {
+        // let value = this.entries.get(id)
         if (!value) return null;
         const selectedUser: Partial<ResData> = {};
         keys.forEach((key) => {
@@ -77,7 +77,7 @@ export class DataDictionary extends Component {
         console.log("entries", this.entries);
     }
    
-    getFindPrefab(name:string) {
+    getPrefab(name:string) {
         let prefabs = name.split("/")
         let data: any = this.getData(prefabs[prefabs.length - 1]);
         return data;

@@ -46,26 +46,19 @@ export class enemy extends Component {
         if (otherNode.name == "buttlet") {
             let bullet=otherNode.getComponent(buttlet)
             bullet.clearBullet(this.pos);
-            this.param.ph -= bullet.Apk;
-            if (this.param.ph <= 0) {
-                InsMgr.event.emit(HeroEvent.DIEENEMY, {enemy:selfCollider.node});
-            }
-            this.attOpen=true;
-            this.sprite.color=Color.RED;
-            this.attTimer=0;
-        }else if(otherNode.name=="laser"){
-            let bullet=otherNode.getComponent(Laser)
-            this.param.ph -= bullet.Apk;
-            if (this.param.ph <= 0) {
-                InsMgr.event.emit(HeroEvent.DIEENEMY, {enemy:selfCollider.node});
-                bullet.nextTarget();
-            }
+           this.updatePh(bullet.Apk);
             this.attOpen=true;
             this.sprite.color=Color.RED;
             this.attTimer=0;
         }
     }
 
+    updatePh(ph){
+        this.param.ph -=ph;
+        if (this.param.ph <= 0) {
+            InsMgr.event.emit(HeroEvent.DIEENEMY, {enemy:this.node});
+        }
+    }
 
     getStartPos() {
         let { order } = this.param;
@@ -85,7 +78,6 @@ export class enemy extends Component {
             if(this.attTime>=this.param.time){
                 this.attTime=0;
                 InsMgr.event.emit(HeroEvent.ATTENEMY, this.param);
-
             }
         }else{
             this.pos  = v3(this.pos.x,this.pos.y-dt * this.param.speed,this.pos.z);

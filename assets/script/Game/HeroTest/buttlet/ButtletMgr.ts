@@ -43,6 +43,7 @@ export class ButtletMgr extends Component {
         });
 
         InsMgr.event.on(HeroEvent.BULLET, this.bulletRemove, this);
+       
     }
     onUpdate(deltaTime: number) {
         if (this.isStop) {
@@ -56,10 +57,11 @@ export class ButtletMgr extends Component {
                 this.bulletCombo(data);
             }
         }
-
         if (this.IsLaset) {
             this.addLaser();
         }
+        
+
     }
     //检查敌人位置
     getCheckEnemy() {
@@ -96,9 +98,7 @@ export class ButtletMgr extends Component {
     getAllEnemy() {
         let enemyList = [];
         this.param.test.enemyList.forEach(item => {
-            if (item.state == 0) {
-                enemyList.push(item);
-            }
+            enemyList.push(item);
         })
         return enemyList;
     }
@@ -170,15 +170,19 @@ export class ButtletMgr extends Component {
     public async addLaser() {
         let data = this.getAllEnemy();
         if (data.length <= 0) {
-            console.log("没有敌人？");
+            console.log("没有敌人？,等待");
+            this.IsLaset=true;
             return;
         }
-        let target = data[Math.floor(Math.random() * data.length)];
-        let pos = this.param.pos;
-        let tdata = { target: target, pos: pos }
+        this.IsLaset=false;
+        let target = data[Math.floor(Math.random() * data.length)] as Node;
+        let pos = v3(this.param.test.hero.position);
+
+        let tdata = { target: target, pos: v3(pos.x + 26 / 2, pos.y, 0) ,cb:()=>{
+            this.addLaser();
+        }}
         if (this.laset) {
             this.laset.init(tdata);
-            this.laset.updateNodeHeight();
             return;
         }
         let info = { handle: "handleA", prefab: "prefab/laser" }
@@ -187,9 +191,9 @@ export class ButtletMgr extends Component {
         node.parent = this.param.test.node;
         this.laset = node.addComponent(Laser) as Laser;
         this.laset.init(tdata);
-        this.laset.updateNodeHeight();
+        node.getComponent(UITransform).priority = 10
     }
-
+    
     //  处理子弹
     bulletRemove(event, data) {
         let { node, type, result } = data;

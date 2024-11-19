@@ -92,7 +92,7 @@ export class ResLoadMode extends Component {
      * 
     */
     public async getPrefab(element): Promise<Prefab> {
-        let prefab= InsMgr.data.getFindPrefab(element.prefab);
+        let prefab= InsMgr.data.getPrefab(element.prefab);
         if (prefab&&prefab.value) {
             return prefab.value;
         } else {
