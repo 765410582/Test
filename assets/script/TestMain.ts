@@ -17,12 +17,17 @@ interface GameData {
 }
 
 
+export enum NetWorkInfo{
+  loginReq,
+  loginRes,
+}
+
 const { ccclass, property } = _decorator;
 @ccclass('TestMain')
 export class TestMain extends Component {
 
   start() {
-  
+    InsMgr.net.connect();
     InsMgr.event.on(EventType.GameEnd, this.GameEnd);
     InsMgr.layer.createUILayer(() => {
       InsMgr.layer.show(UIID.Loading);
@@ -31,7 +36,7 @@ export class TestMain extends Component {
   }
 
   // 确认结束游戏
-  GameEnd(event ,data: GameData, status = true) {
+  GameEnd(event, data: GameData, status = true) {
     if (!data) return;
     let { page, suc, fail, param } = data;
     if (status) {

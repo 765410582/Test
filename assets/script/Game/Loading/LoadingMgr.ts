@@ -4,6 +4,7 @@ import { InsMgr } from '../../frame/InsMgr';
 import { UIConfigData, UIID } from '../../main/ViewConfig';
 
 import { l10n } from 'db://localization-editor/l10n'
+import { NetWorkInfo } from '../../TestMain';
 const loadData = [{ path: "prefab", type: Prefab, dec: "预制体", handle: "bundleA" }, { path: "ui", type: SpriteFrame, dec: "精灵贴图", handle: "bundleA" }, { path: "tex", type: Texture2D, dec: "图片原始数据", handle: "bundleA" }];
 const { ccclass, property } = _decorator;
 @ccclass('LoadingMgr')
@@ -18,6 +19,10 @@ export class LoadingMgr extends Component {
         this.progressBar = this.node.getChildByName("ProgressBar").getComponent(ProgressBar);
         this.barLabel = this.node.getChildByName("barLabel").getComponent(Label);
         InsMgr.layer.show(UIID.NetLoading);
+        let login={cmd:NetWorkInfo.loginReq,username:"test",password:"123456"}
+        InsMgr.net.sendMessage(JSON.stringify(login))
+        
+
         this.loading();
     }
     async loading() {
@@ -65,10 +70,10 @@ export class LoadingMgr extends Component {
         }, (assets) => {
             for (let i = 0; i < assets.length; i++) {
                 if (element.type == Prefab) {
-                    InsMgr.data.add(assets[i].name, assets[i], element.dec);
+                    InsMgr.data.setData(assets[i].name, assets[i], element.dec);
                 } else {
                     let key = element.path + i
-                    InsMgr.data.add(key, assets[i], element.dec);
+                    InsMgr.data.setData(key, assets[i], element.dec);
                 }
             }
             resolve(true);

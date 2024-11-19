@@ -1,4 +1,4 @@
-import { __private, _decorator, Color, Component, director, EventTouch, gfx, Label, Node, Rect, Sprite, SpriteFrame, Texture2D, tween, UITransform, v3, Vec3, Widget } from 'cc';
+import { __private, _decorator, Color, Component, director, EventTouch, gfx, Label, Node, Rect, Sprite, SpriteFrame, Texture2D, tween, UITransform, v2, v3, Vec2, Vec3, Widget } from 'cc';
 import { ReNodeData } from '../ConfigData';
 import { EventMgr } from '../../frame/EventMgr';
 import { EventType } from '../../TestMain';
@@ -275,13 +275,13 @@ export class ToolHelper extends Component {
      * */
     reBtnCall(node, cb = null) {
         this.nodealign(node, ReNodeData);
-        node.getChildByName("Label").getComponent(Label).string=l10n.t("return");
+        node.getChildByName("Label").getComponent(Label).string = l10n.t("return");
         node.on("click", () => {
             this.layerEnd(cb)
         });
     }
 
-    layerEnd(cb=null){
+    layerEnd(cb = null) {
         InsMgr.event.emit(EventType.GameEnd, {
             page: InsMgr.layer.getCurLevel(),
             suc: () => {
@@ -313,26 +313,26 @@ export class ToolHelper extends Component {
     }
 
 
-    getNode<T extends Component>(parent: Node,classConstructor: __private._types_globals__Constructor<T> | __private._types_globals__AbstractedConstructor<T>=null,  name: string = "node") {
+    getNode<T extends Component>(parent: Node, classConstructor: __private._types_globals__Constructor<T> | __private._types_globals__AbstractedConstructor<T> = null, name: string = "node") {
         let node = new Node(name);
         node.addComponent(UITransform)
         node.parent = parent;
-        if(classConstructor){
+        if (classConstructor) {
             node.addComponent(classConstructor)
         }
         return node;
     }
 
-    getDisance(pos1:Vec3, pos2:Vec3):number{
+    getDisance(pos1: Vec3, pos2: Vec3): number {
         if (!(pos1 instanceof Vec3) || !(pos2 instanceof Vec3)) {
             throw new TypeError('Both arguments must be instances of Vec3');
         }
-    
+
         if (typeof pos1.x !== 'number' || typeof pos1.y !== 'number' || typeof pos1.z !== 'number' ||
             typeof pos2.x !== 'number' || typeof pos2.y !== 'number' || typeof pos2.z !== 'number') {
             throw new Error('Vec3 properties must be numbers');
         }
-    
+
         const dx = pos1.x - pos2.x;
         const dy = pos1.y - pos2.y;
         const dz = pos1.z - pos2.z;
@@ -343,7 +343,44 @@ export class ToolHelper extends Component {
         const firstPart = arr.slice(0, index);
         const secondPart = arr.slice(index);
         return [firstPart, secondPart];
-      }
+    }
+
+    // 计算子弹到目标的归一化方向向量
+    getCalculateDirection(target: Vec3, pos: Vec3): Vec2 {
+        const dx = target.x - pos.x;
+        const dy = target.y - pos.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        // 归一化向量
+        return v2(dx / distance, dy / distance)
+    }
+
+    // 计算子弹到目标的旋转角度
+    getCalculateDegrees(target: Vec3, pos: Vec3): number {
+        const dx = target.x - pos.x;
+        const dy = target.y - pos.y;
+        const angle = Math.atan2(dy, dx); // 计算弧度
+        // 将弧度转换为度数
+        return angle * (180 / Math.PI);
+    }
+    // 通过角度转成弧度
+    getDegreesInAngle(degree) {
+        return degree / (180 / Math.PI)
+    }
+
+    // 通过自身位置和弧度预算出目标位置
+    getTargetPos(angle, pos,distance=1) {
+        
+        const targetX = pos.x + Math.cos(angle)*distance;
+        const targetY = pos.y + Math.sin(angle)*distance;
+        return v3(targetX,targetY,0)
+    }
+
+    getTextureToSpriteFrame(tex: Texture2D): SpriteFrame {
+        let sf = new SpriteFrame();
+        sf.texture = tex;
+        return sf;
+    }
+
 }
 
 export class mayThrowError {

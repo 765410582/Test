@@ -19,18 +19,7 @@ export class GameTime extends Component {
     private _update_time:number=0;
     private _task_time=[];
     timeLabel: Label;
-   
-    get time(){
-        return this._time;
-    }
-    set time(v){
-        this._time = v;
-        if(this._update_time<=this._time){
-            this._update_time=parseInt(this.time.toString())
-            this.timeLabel.string=l10n.t("time")+this._update_time+"s"
-        }
-        this.updateOtherTime();
-    }
+    
     constructor(){
         super();   
     }
@@ -60,6 +49,19 @@ export class GameTime extends Component {
         })
         
     }
+
+    get time(){
+        return this._time;
+    }
+    set time(v){
+        this._time =v
+        if(this._update_time!=parseInt(this._time.toString())){
+            this._update_time= parseInt(this._time.toString())
+            this.timeLabel.string=l10n.t("time")+this._update_time+"s"
+        }
+        this.updateOtherTime();
+    }
 }
+
 
 

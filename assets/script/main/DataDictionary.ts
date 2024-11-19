@@ -1,18 +1,19 @@
-import { _decorator, Component, Node, Prefab } from 'cc';
+import { _decorator, Component, Node, Prefab, Texture2D } from 'cc';
 const { ccclass, property } = _decorator;
-export interface DictionaryEntry<T> {
+export interface ResData {
     key: string;
-    value: T;
+    value: any;
     description?: string
 }
+type TempTest<T> = T extends ResData ? T : never;
 @ccclass('DataDictionary')
-export class DataDictionary<T> extends Component {
-    private entries: Map<string, DictionaryEntry<T>>;
+export class DataDictionary extends Component {
+    private entries: Map<string, ResData>;
     constructor() {
         super()
         this.entries = new Map();
     }
-    add(key, value, description?) {
+    setData(key, value, description?) {
         this.entries.set(key, { key, value, description });
     }
 
@@ -21,13 +22,50 @@ export class DataDictionary<T> extends Component {
             return this.entries.delete(key);
         }
     }
-    find(key): DictionaryEntry<T> {
+
+    getData(key: string): ResData | null {
+        let obj: any = { key: key, value: null, description: null };
         if (this.entries.has(key)) {
             return this.entries.get(key);
-        } else {
-            return { key: key, value: null, description: null };
         }
+        return null;
     }
+
+    getUserProperty<T, K extends keyof T>(user: T | null | undefined, key: K): T[K] {
+        if (user === null || user === undefined)
+            return null;
+        const value= user[key];
+        return value;
+    }
+    /**
+     * 根据用户ID和指定的键获取用户信息
+     * 
+     * 此函数通过接收一个用户ID和一个键数组，从存储中提取该用户的相关信息，并返回一个仅包含指定键对应值的对象
+     * 它使用了泛型T来确保类型安全，使得返回值的类型反映了传入的键的类型
+     * 
+     * @param id 用户ID，用于在存储中查找用户信息
+     * @param keys 指定需要提取的用户信息的键数组
+     * @returns 返回一个仅包含指定键对应值的用户信息对象
+     */
+    getUser<T extends keyof ResData>(id, keys: T[]): Pick<ResData, T> {
+        let value = this.entries.get(id)
+        if (!value) return null;
+        const selectedUser: Partial<ResData> = {};
+        keys.forEach((key) => {
+            selectedUser[key] = value[key];
+        });
+        return selectedUser as Pick<ResData, T>;
+    }
+    queryData(predicate) {
+        const result = [];
+        for (const item of this.entries.values()) {
+            if (predicate(item)) {
+                result.push(item);
+            }
+        }
+        return result;
+    }
+
     clear() {
         this.entries.clear();
     }
@@ -35,53 +73,13 @@ export class DataDictionary<T> extends Component {
     size(): number {
         return this.entries.size;
     }
-    print(){
-        console.log("entries",this.entries);
+    print() {
+        console.log("entries", this.entries);
     }
-/**
- * 根据提供的谓词过滤字典条目。
- * @param predicate - 用于判断是否保留条目的函数。
- * @returns 过滤后的数据字典。
- */
-    filter(predicate: (entry: DictionaryEntry<T>) => boolean):DataDictionary<T>{
-        let filtedDictionary=new DataDictionary<T>();
-        this.entries.forEach( enter=>{
-            if(predicate(enter)){
-                filtedDictionary.add(enter.key,enter.value,enter.description);
-            }
-        })
-        return filtedDictionary;
-    }
-/**
- * 遍历字典中的每个条目
- * 
- * 此方法接受一个回调函数作为参数，该回调函数将依次应用于字典中的每个条目
- * 它提供了一种灵活的方式来处理或操作每个条目的数据
- * 
- * @param callback - 一个接受字典条目作为参数的回调函数
- *                   该回调函数将在字典的每个条目上调用
- */
-    forEach(callback: (entry: DictionaryEntry<T>) => void) {
-        this.entries.forEach(callback);
-    }
-
-    /**
- * 将当前字典中的每个条目映射为一个新的值，并返回这些新值的数组
- * 
- * @param transform 一个函数，用于将字典中的每个条目转换为新的值
- * @returns 返回一个数组，包含将字典中的每个条目通过transform函数转换后得到的新值
- */
-    map<U>(transform: (entry: DictionaryEntry<T>) => U): U[] {
-        return Array.from(this.entries.values()).map(transform);
-    }
-
-    get isLoad():boolean{
-        return this.entries.size>0;
-    }
-
-    getFindPrefab(name):  DictionaryEntry<T> {
+   
+    getFindPrefab(name:string) {
         let prefabs = name.split("/")
-        let data: any = this.find(prefabs[prefabs.length - 1]);
+        let data: any = this.getData(prefabs[prefabs.length - 1]);
         return data;
     }
 

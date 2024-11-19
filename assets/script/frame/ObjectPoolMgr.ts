@@ -21,66 +21,44 @@ export class ObjectPoolMgr extends Component {
         }
         return this._instance;
     }
-    private pools: Map<string, Array<Node>> = new Map<string, Array<Node>>();
+    private pools: Map<string,NodePool> = new Map<string, NodePool>();
     private records: Map<string, Record> = new Map<string, Record>();
     public create(key, data) {
-
         if (!this.pools.has(key)) {
-            let pool = [];
+            let pool =new NodePool();
             this.pools.set(key, pool)
             this.records.set(key, data)
-        } else {
-            console.error("key重复");
         }
     }
 
     public get(key: string): Node | null {
         let pool = this.pools.get(key);
-        if (pool.length > 0) {
-            return pool.shift()
+        if (pool.size() > 0) {
+            return pool.get()
         }
         return null;
     }
 
     public put(key, node: Node) {
-        let pool = this.pools.get(key);
-        if (pool) {
-            pool.push(node);
+        if(this.pools.has(key)){
+            let pool = this.pools.get(key);
+            if (pool) {
+                pool.put(node);
+            }else{
+                node.destroy();
+            }
+        }else{
+            node.destroy();
         }
     }
 
     public delete(key) {
         if (this.pools.has(key)) {
-            this.pools.delete(key);
+            this.pools.clear();
         }
     }
 
 
-}
-
-export class MyObjPool<T> {
-    private pool: T[] = []; // 对象池数组
-    private maxPoolSize: number;        // 最大池容量
-    private createObject: () => T;      // 创建新对象的工厂方法
-
-    constructor(createObject: () => T, maxPoolSize: number = 10) {
-        this.createObject = createObject;
-        this.maxPoolSize = maxPoolSize;
-    }
-    get(): T {
-        return this.pool.length > 0 ? this.pool.pop() : this.createObject();
-    }
-    put(obj: T) {
-        if (this.pool.length < this.maxPoolSize) {
-            this.pool.push(obj);
-        }
-    }
-
-    poolSize() {
-        return this.pool.length;
-    }
-
-    
 }
 
 

@@ -1,32 +1,48 @@
-import { _decorator, Component, instantiate, Node, NodePool, UITransform, v3 } from 'cc';
+import { _decorator, Component, instantiate, Node, NodePool, UITransform, v2, v3, Vec2, Vec3 } from 'cc';
 import { InsMgr } from '../../../frame/InsMgr';
-import { buttlet } from './buttlet';
-import { MyObjPool, ObjectPoolMgr } from '../../../frame/ObjectPoolMgr';
+import { BulletState, buttlet } from './buttlet';
+import { ObjectPoolMgr } from '../../../frame/ObjectPoolMgr';
+import { HeroEvent } from '../HeroTestMgr';
+import { Laser } from '../att/Laser';
 const { ccclass, property } = _decorator;
 
+// 子弹类型
+export enum BulletType {
+    BULLET_MAIN = "BULLET_MAIN",//主子弹
+    BULLET_SECOND = "BULLET_SECOND",//次级子弹
+    BULLET_DEL = "BULLET_DEL"//子弹消除
+}
+
+export const BulletPoolPath: string = "bullet";
 @ccclass('ButtletMgr')
 export class ButtletMgr extends Component {
 
     param: any;
     time: number = 0;
     maxTime: number = 1;
-    combo: number =3;// 连击
+    combo: number = 5;// 连击
     volley: number = 2;  //  齐射
     fireTime: number = 1;// 发射子弹时间
-    bulletName: string = "bullet";
+    IsSecondBullet: boolean = true;//次级子弹
+    IsWallReflect: boolean = true;
+    IsFourBullet: boolean = true;
     bulletList = [];
     isStop: boolean = false;
+    laset: Laser;
+    IsLaset: boolean = true;
     constructor(param?) {
         super();
         this.param = param;
         this.schedule(this.onUpdate, this.fireTime);
-        ObjectPoolMgr.instance.create(this.bulletName, {
+        ObjectPoolMgr.instance.create(BulletPoolPath, {
             usageCounter: 0,
             releaseCounter: 0,
             minSize: 5,
             maxSize: 10,
             shrinkThreshold: 0.3
         });
+
+        InsMgr.event.on(HeroEvent.BULLET, this.bulletRemove, this);
     }
     onUpdate(deltaTime: number) {
         if (this.isStop) {
@@ -39,6 +55,10 @@ export class ButtletMgr extends Component {
             if (data) {
                 this.bulletCombo(data);
             }
+        }
+
+        if (this.IsLaset) {
+            this.addLaser();
         }
     }
     //检查敌人位置
@@ -64,7 +84,23 @@ export class ButtletMgr extends Component {
             })
         }
         let order = this.param.test.node.getComponent(UITransform).contentSize;
-        return { start: target, nearest: nearest, order: order }
+        const direction = InsMgr.tool.getCalculateDirection(nearest, target)
+        const angle = InsMgr.tool.getCalculateDegrees(nearest, target);
+        return {
+            start: target, direction: direction, angle: angle
+            , order: order, popupSpeed: this.param.popupSpeed, type: BulletType.BULLET_MAIN
+        }
+    }
+
+    //获取所有敌人
+    getAllEnemy() {
+        let enemyList = [];
+        this.param.test.enemyList.forEach(item => {
+            if (item.state == 0) {
+                enemyList.push(item);
+            }
+        })
+        return enemyList;
     }
 
     // 连击
@@ -84,52 +120,171 @@ export class ButtletMgr extends Component {
     bulletVolley(data) {
         this.addBullet(data);
         if (this.volley > 0) {
-            for (let i = 0; i < this.volley; i++) {
-                let index = i % 2;
-                let count = Math.ceil(i / 2);
-                let offset = index == 1 ? (150 + 150 * count) : -(150 + 150 * count)
-                this.addBullet({ start: data.start, nearest: v3(offset + data.nearest.x, offset + data.nearest.y, 0), order: data.order });
+            const { start, angle, order } = data;
+            let upCount = 0;
+            let downCount = 0;
+            let moveAngle = 5;
+            for (let i = 1; i <= this.volley; i++) {
+                let mode = i % 2
+                let curAngle = null;
+                if (mode == 0) {
+                    upCount++;
+                    curAngle = angle - upCount * moveAngle;
+                } else {
+                    downCount++;
+                    curAngle = angle + downCount * moveAngle;
+                }
+                let degress = InsMgr.tool.getDegreesInAngle(curAngle);
+                let curNearest = InsMgr.tool.getTargetPos(degress, start);
+                const curDirection = InsMgr.tool.getCalculateDirection(curNearest, start)
+                const curdata = {
+                    start: start, direction: curDirection, angle: curAngle
+                    , order: order, popupSpeed: this.param.popupSpeed, type: BulletType.BULLET_MAIN
+                }
+
+                this.addBullet(curdata);
             }
         }
     }
+
+
     // 添加子弹
     async addBullet(data) {
-        let info = { handle: "handleA", prefab: "prefab/buttlet" }
-        let item = ObjectPoolMgr.instance.get(this.bulletName);
-        if (item) {
-            item.getComponent(buttlet).init(Object.assign(data, {
-                cb: (bulletNode) => {
-                    this.delBullet(bulletNode);
-                }
-            }));
+        let node = ObjectPoolMgr.instance.get(BulletPoolPath);
+        if (node) {
+            node.parent = this.param.test.node;
+            let bullet = node.getComponent(buttlet)
+            bullet.init(data);
         } else {
+            let info = { handle: "handleA", prefab: "prefab/buttlet" }
             let prefab: any = await InsMgr.res.getPrefab(info);
-            let node = instantiate(prefab);
+            node = instantiate(prefab);
             node.parent = this.param.test.node;
             let bullet = node.addComponent(buttlet)
-            bullet.init(Object.assign(data, {
-                cb: (bulletNode) => {
-                    this.delBullet(bulletNode);
-                }
-            }));
-            this.bulletList.push(node);
+            bullet.init(data);
+        }
+        this.bulletList.push(node);
+    }
+
+    // 激光
+    public async addLaser() {
+        let data = this.getAllEnemy();
+        if (data.length <= 0) {
+            console.log("没有敌人？");
+            return;
+        }
+        let target = data[Math.floor(Math.random() * data.length)];
+        let pos = this.param.pos;
+        let tdata = { target: target, pos: pos }
+        if (this.laset) {
+            this.laset.init(tdata);
+            this.laset.updateNodeHeight();
+            return;
+        }
+        let info = { handle: "handleA", prefab: "prefab/laser" }
+        let prefab: any = await InsMgr.res.getPrefab(info);
+        let node = instantiate(prefab);
+        node.parent = this.param.test.node;
+        this.laset = node.addComponent(Laser) as Laser;
+        this.laset.init(tdata);
+        this.laset.updateNodeHeight();
+    }
+
+    //  处理子弹
+    bulletRemove(event, data) {
+        let { node, type, result } = data;
+        const index = this.bulletList.indexOf(node);
+        if (index !== -1) {
+            this.bulletList.splice(index, 1);
+        }
+
+        // 如果是主子弹
+        if (type == BulletType.BULLET_MAIN) {
+            switch (result) {
+                case BulletState.ENEMY:// 碰到怪物
+                    // 发射两个次级子弹
+                    if (this.IsSecondBullet) {
+                        this.addSecondBullet(data);
+                    }
+                    // 四方攻击
+                    if (this.IsFourBullet) {
+                        this.addFourBullet(data);
+                    }
+                    break;
+                case BulletState.WALL:
+                    // 碰到墙壁
+                    if (this.IsWallReflect)
+                        this.addWallReflect(data);
+                    break;
+                default:
+                    throw new Error("没有处理子弹类型");
+            }
+        }
+    }
+    addFourBullet(data: any) {
+        let { pos, order } = data;
+        if (!pos) return;
+        let tpos = [v2(50, 0), v2(0, 50), v2(-50, 0), v2(0, -50)]
+        let angel = 90;
+        for (let i = 0; i < 4; i++) {
+            let curAngle = angel * i;
+            let start = v3(pos.x + tpos[i].x, pos.y + tpos[i].y, 0)
+            let degress = InsMgr.tool.getDegreesInAngle(curAngle);
+            let curNearest = InsMgr.tool.getTargetPos(degress, start);
+            const curDirection = InsMgr.tool.getCalculateDirection(curNearest, start)
+            const curdata = {
+                start: start, direction: curDirection, angle: curAngle
+                , order: order, popupSpeed: this.param.popupSpeed, type: BulletType.BULLET_SECOND
+            }
+            this.addBullet(curdata);
         }
     }
 
-    delBullet(node:Node) {
-        this.bulletList = this.bulletList.filter(item => node !== item);
-        ObjectPoolMgr.instance.put(this.bulletName, node);
+    // 次级子弹发射
+    public addSecondBullet(data) {
+        let { pos, order } = data;
+        if (!pos) return;
+        let start = v3(pos.x, pos.y + 50, 0)
+        let angel = 15;
+        for (let i = 1; i <= 2; i++) {
+            let curAngle = 90 + (i % 2 == 0 ? angel : -angel);
+            let degress = InsMgr.tool.getDegreesInAngle(curAngle);
+            let curNearest = InsMgr.tool.getTargetPos(degress, start);
+            const curDirection = InsMgr.tool.getCalculateDirection(curNearest, start)
+            const curdata = {
+                start: start, direction: curDirection, angle: curAngle
+                , order: order, popupSpeed: this.param.popupSpeed, type: BulletType.BULLET_SECOND
+            }
+            this.addBullet(curdata);
+        }
     }
 
+    // 墙壁反射
+    public addWallReflect(data) {
+        let { pos, order, angle } = data;
+        let start = v3(pos.x, pos.y + 50, 0)
+        let curAngle = 180 - angle;
+        let degress = InsMgr.tool.getDegreesInAngle(curAngle);
+        let curNearest = InsMgr.tool.getTargetPos(degress, start);
+        const curDirection = InsMgr.tool.getCalculateDirection(curNearest, start)
+        const curdata = {
+            start: start, direction: curDirection, angle: curAngle
+            , order: order, popupSpeed: this.param.popupSpeed, type: BulletType.BULLET_SECOND
+        }
+        this.addBullet(curdata);
+    }
+
+
+
     public onDestroy(): void {
-        console.log("销毁 子弹管理");
-        ObjectPoolMgr.instance.delete(this.bulletName);
+        InsMgr.event.off(HeroEvent.BULLET);
+        ObjectPoolMgr.instance.delete(BulletPoolPath);
         this.isStop = true;
         this.unschedule(this.onUpdate);
         for (let i = 0; i < this.bulletList.length; i++) {
             let bullet = this.bulletList[i];
             if (bullet) {
-                (bullet as Node).destroy();
+                (bullet as Node).removeFromParent();
             }
         }
     }

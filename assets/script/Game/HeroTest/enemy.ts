@@ -1,9 +1,10 @@
-import { _decorator, BoxCollider2D, Collider2D, Component, Contact2DType, IPhysics2DContact,RigidBody2D,v3, Vec3 } from 'cc';
+import { _decorator, BoxCollider2D, Collider2D, Color, Component, Contact2DType, IPhysics2DContact,RigidBody2D,SpringJoint2D,Sprite,v3, Vec3 } from 'cc';
 
 
 import { InsMgr } from '../../frame/InsMgr';
 import { HeroEvent } from './HeroTestMgr';
 import { buttlet } from './buttlet/buttlet';
+import { Laser } from './att/Laser';
 const { ccclass, property } = _decorator;
 @ccclass('enemy')
 export class enemy extends Component {
@@ -14,6 +15,10 @@ export class enemy extends Component {
     private running: boolean = false;
     private attTime:number=0;
     private _pause:boolean=true;
+    private attTimer:number=0;
+    private attMaxTime:number=0.5;
+    private attOpen:boolean=false;
+    private sprite:Sprite;
     get isPause() {
         return this._pause;
     }
@@ -28,6 +33,7 @@ export class enemy extends Component {
         if (collider) {
             collider.on(Contact2DType.BEGIN_CONTACT, this.onBeginContact, this);
         }
+        this.sprite=this.node.getChildByName("Sprite").getComponent(Sprite);
         this.schedule(this.onUpdate)
     }
     /**
@@ -39,11 +45,24 @@ export class enemy extends Component {
         let otherNode=otherCollider.node
         if (otherNode.name == "buttlet") {
             let bullet=otherNode.getComponent(buttlet)
-            bullet.clearBullet();
+            bullet.clearBullet(this.pos);
             this.param.ph -= bullet.Apk;
             if (this.param.ph <= 0) {
                 InsMgr.event.emit(HeroEvent.DIEENEMY, {enemy:selfCollider.node});
             }
+            this.attOpen=true;
+            this.sprite.color=Color.RED;
+            this.attTimer=0;
+        }else if(otherNode.name=="laser"){
+            let bullet=otherNode.getComponent(Laser)
+            this.param.ph -= bullet.Apk;
+            if (this.param.ph <= 0) {
+                InsMgr.event.emit(HeroEvent.DIEENEMY, {enemy:selfCollider.node});
+                bullet.nextTarget();
+            }
+            this.attOpen=true;
+            this.sprite.color=Color.RED;
+            this.attTimer=0;
         }
     }
 
@@ -66,16 +85,31 @@ export class enemy extends Component {
             if(this.attTime>=this.param.time){
                 this.attTime=0;
                 InsMgr.event.emit(HeroEvent.ATTENEMY, this.param);
+
             }
         }else{
-            this.pos  = this.pos.subtract(v3(0, dt * this.param.speed, 0));
-            this.node.position =   this.pos ;
+            this.pos  = v3(this.pos.x,this.pos.y-dt * this.param.speed,this.pos.z);
+            this.node.position = this.pos ;
             let tempPos=this.pos.y-this.param.distance;
             if ( tempPos< this.param.heroPos.y) {
                 this.running=true;
             }
         }
+        if(this.attOpen){
+            this.attRed(dt);
+        }
+     
     }
+
+    // 打到敌人
+    attRed(dt){
+        this.attTimer+=dt
+        if(this.attMaxTime<this.attTimer){
+            this.attOpen=false;
+            this.sprite.color=Color.WHITE;
+        }
+    }
+    
 
     protected onDestroy(): void {
         let collider = this.node.getComponent(Collider2D);

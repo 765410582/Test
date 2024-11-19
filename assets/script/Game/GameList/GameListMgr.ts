@@ -20,7 +20,8 @@ export class GameListMgr extends Component {
         this.scrollListCtrl = this.scorllNode.getComponent(ScrollView)
         this.addData();
 
-        InsMgr.data.print();
+        let tdata=InsMgr.data.getUser("ui1",["description","key"]);
+        console.log("tdata:",tdata);
 
     }
     addData() {
@@ -30,19 +31,14 @@ export class GameListMgr extends Component {
             , UIID.HeroTest
             , UIID.RedGreenLight
             , UIID.SelectColor
-            , UIID.Tetris
+            , UIID.Tetris, , , ,, , , ,, , , ,, , , ,,
+            , , , ,, , , ,, , , ,, , , ,, , , ,, , , ,
+            , , , ,, , , ,, , , ,, , , ,, , , ,, , , ,
         ];
-        let randomColor = [
-            "#fd6d6c"
-            , "#4c9cff"
-            , "#4ccc31"
-            , "#da68ff"
-        ]
-        let len = dataArray.length;
-        for (let i = 0; i < len; i++) {
-            let color = new Color().fromHEX(randomColor[Math.floor(Math.random() * randomColor.length)]);
+        let result = InsMgr.data.queryData(item => item.value.name.indexOf("item") != -1)
+        InsMgr.data.print();
+        for (let i = 0; i < result.length; i++) {
             let param = {
-                color: color,
                 type: dataArray[i],
                 itemIndex: i,
                 cb: (data, index, spriteFrame) => {

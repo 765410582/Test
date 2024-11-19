@@ -1,6 +1,6 @@
 import { _decorator, Asset, AssetManager, assetManager, Component, Node, Prefab, resources } from 'cc';
 import { InsMgr } from './InsMgr';
-import { DictionaryEntry } from '../main/DataDictionary';
+
 const { ccclass, property } = _decorator;
 
 @ccclass('ResLoadMode')
@@ -92,7 +92,7 @@ export class ResLoadMode extends Component {
      * 
     */
     public async getPrefab(element): Promise<Prefab> {
-        let prefab: DictionaryEntry<any> = InsMgr.data.getFindPrefab(element.prefab);
+        let prefab= InsMgr.data.getFindPrefab(element.prefab);
         if (prefab&&prefab.value) {
             return prefab.value;
         } else {

@@ -1,77 +1,73 @@
-import { _decorator, BoxCollider, BoxCollider2D, Collider, Collider2D, Component, Contact2DType, IPhysics2DContact, ITriggerEvent, Node, RigidBody2D, v2, v3, Vec2, Vec3 } from 'cc';
+import { _decorator, Component, RigidBody2D,v2, v3, Vec2, Vec3 } from 'cc';
+import { InsMgr } from '../../../frame/InsMgr';
+import { HeroEvent } from '../HeroTestMgr';
+import { ObjectPoolMgr } from '../../../frame/ObjectPoolMgr';
+import { BulletPoolPath } from './ButtletMgr';
 const { ccclass, property } = _decorator;
-
+export enum BulletState {
+    DEFALT = 0,
+    WALL = 1,
+    ENEMY = 2
+}
 @ccclass('buttlet')
 export class buttlet extends Component {
     private param: any;
     private position: Vec3;
-    private speed: Vec2 = v2(1000, 1000);
-    // 量化方向
+    private speed: Vec2 = v2(30, 30);
     private direction: Vec2;
-    private angle;
-    Apk: number = 25;
+    Apk: number = 5;
     isStop: boolean = false;
+    bulletCount: number = 0;
+    state: BulletState = BulletState.DEFALT;
+    rigidbody: RigidBody2D;
     init(param) {
         this.param = param;
-        this.position = this.param.start;
-        this.direction = this.calculateDirection(this.param.nearest);
-        this.calculateAngle(this.param.nearest);
-        this.node.angle = this.getAngleInDegrees();
-        this.schedule(this.onUpdate);
+        let { start, direction, angle } = this.param;
+        this.node.position =this.position = start;
+        this.direction = direction;
+        this.node.setRotationFromEuler( 0, 0, angle);
+        this.state = BulletState.ENEMY;
+        this.rigidbody = this.node.getComponent(RigidBody2D);
         this.isStop = false;
+        let velocity = v2(this.direction.x * this.speed.x * this.param.popupSpeed,
+            this.direction.y * this.speed.y * this.param.popupSpeed);
+        this.rigidbody.linearVelocity = velocity;
+        this.schedule(this.onUpdate);
     }
 
-    // 计算子弹到目标的归一化方向向量
-    private calculateDirection(target: Vec3): Vec2 {
-        const dx = target.x - this.position.x;
-        const dy = target.y - this.position.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        // 归一化向量
-        return v2(dx / distance, dy / distance)
-    }
-
-    // 计算子弹到目标的旋转角度
-    calculateAngle(target: Vec3): void {
-        const dx = target.x - this.position.x;
-        const dy = target.y - this.position.y;
-        this.angle = Math.atan2(dy, dx); // 计算弧度
-    }
-
-    // 将弧度转换为度数
-    getAngleInDegrees(): number {
-        return this.angle * (180 / Math.PI);
-    }
 
     onUpdate(dt: number): void {
         if (this.isStop) return;
-        this.updatePos(dt);
         this.outOrder();
     }
 
 
     updatePos(dt) {
-        this.position = v3(this.position.x + this.direction.x * this.speed.x * dt,
-            this.position.y + this.direction.y * this.speed.y * dt);
+        this.position = v3(this.position.x + this.direction.x * this.speed.x * dt * this.param.popupSpeed,
+            this.position.y + this.direction.y * this.speed.y * dt * this.param.popupSpeed);
         this.node.position = this.position;
     }
 
     // 超出边界
     outOrder() {
-        if (this.position.x <= -this.param.order.width / 2 ||
-            this.position.x >= this.param.order.width / 2 ||
-            this.position.y <= -this.param.order.height / 2 ||
-            this.position.y >= this.param.order.height / 2) {
-                this.clearBullet()
+        if (this.node.position.x <= -this.param.order.width / 2 ||
+            this.node.position.x >= this.param.order.width / 2 ||
+            this.node.position.y <= -this.param.order.height / 2 ||
+            this.node.position.y >= this.param.order.height / 2) {
+            this.state = BulletState.WALL;
+            this.clearBullet(this.node.position)
         }
     }
 
+
     // 子弹需要清除
-    public clearBullet() {
+    public clearBullet(position = null) {
         this.unschedule(this.onUpdate);
-        //  this.param.cb && this.param.cb(this.node);
+        let data=Object.assign({ pos: position, result: this.state }, this.param);
+        InsMgr.event.emit(HeroEvent.BULLET,data);
         this.isStop = true;
-        // this.node.destroy();
-        this.node.position=v3(0,0,0)
+        this.node.destroy();
+        // ObjectPoolMgr.instance.put(BulletPoolPath, this.node);
     }
 }
 

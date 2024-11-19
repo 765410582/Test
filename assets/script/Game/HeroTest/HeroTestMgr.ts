@@ -64,10 +64,12 @@ const GameData = {
 
 }
 export enum HeroEvent {
-    BUTTLET = "BUTTLET",
+    ENEMY = "ENEMY",
     DIEENEMY = "DIEENEMY",
     ATTENEMY = "ATTENEMY",
-    HEROEND = "HEROEND"
+    HEROEND = "HEROEND",
+    BULLET="BULLET",
+    
 }
 
 
@@ -86,7 +88,9 @@ export class HeroTestMgr extends Component {
     curAttTarget:Node=null;
     enemyCount: number = 0;
     enemyMax: number = 0;
+    enemyLevel: number = 1;
     buttletMgr: ButtletMgr;
+    popupSpeed:number=1;
     get isPause() {
         return this._pause;
     }
@@ -97,12 +101,11 @@ export class HeroTestMgr extends Component {
     init(param?) {
         this.param = param;
 
-        this.buttletMgr=new ButtletMgr({test:this});
+        this.buttletMgr=new ButtletMgr({test:this,popupSpeed:this.popupSpeed});
         this.boxSize = this.node.getComponent(UITransform).contentSize
         this.regiterUI();
         this.regiterEvent();
         this.regiterHero();
-     
         this.addBitEnemy();
     }
 
@@ -111,27 +114,28 @@ export class HeroTestMgr extends Component {
         InsMgr.tool.reBtnCall(this.node.getChildByName("reBtn"), (state) => {
             this.isPause = state;
         });
+        this.node.getChildByPath("sot/Label").getComponent(Label).string=`x${this.popupSpeed}`
+        this.node.getChildByPath("sot").active=this.popupSpeed<=1?false:true;
     }
 
     regiterEvent() {
-        InsMgr.event.on(HeroEvent.BUTTLET, this.handlerEventButtlet, this);
+        InsMgr.event.on(HeroEvent.ENEMY, this.handlerEventEnemy, this);
         InsMgr.event.on(HeroEvent.DIEENEMY, this.clearEnemy, this);
         InsMgr.event.on(HeroEvent.ATTENEMY, this.attEnemy, this);
         InsMgr.event.on(HeroEvent.HEROEND, this.heroEnd, this);
     }
 
     addBitEnemy(){
+        this.enemyLevel++;
         for(let i=0;i<100;i++){
             InsMgr.time.setTaskTime(TimeType.HeroTouch,{
                 time:0.3*i,
-                event:HeroEvent.BUTTLET,
+                event:HeroEvent.ENEMY,
                 data:null,
             });
             this.enemyMax++;
         }
         this.updateEnemyLabel();
-
-        
     }
 
     
@@ -159,6 +163,7 @@ export class HeroTestMgr extends Component {
         let arr = ["2001", "2002"]
         let id = arr[Math.floor(Math.random() * arr.length)];
         let item = structuredClone(GameData.enemy[id])
+        item.ph=item.ph*this.enemyLevel;
         let data = Object.assign(item, { order: size, heroPos: this.hero.position })
         node.addComponent(enemy).init(data);
         this.enemyList.push(node);
@@ -174,7 +179,7 @@ export class HeroTestMgr extends Component {
     }
 
 
-    handlerEventButtlet(event, data) {
+    handlerEventEnemy(event, data) {
         if (!this.isPause) return;
         this.addEnemy();
     }
@@ -187,14 +192,20 @@ export class HeroTestMgr extends Component {
         }
         this.die = false;
         this.isPause = false;
-        InsMgr.layer.show(UIID.GameOver, Object.assign(data, {
-            UIID: UIID.HeroTest, cb: (state) => {
-                this.isPause = state;
-                if (state) {
-                    InsMgr.tool.layerEnd()
-                }
-            }
-        }));
+        this.buttletMgr.isStop=true;
+        let tdata={
+            title:"SHOOT OVER",
+            isConfire:true,
+            isCancel:true,
+            confireCb:()=>{
+                InsMgr.tool.layerEnd()
+            },
+            cancelCb:()=>{
+                InsMgr.tool.layerEnd()
+            },
+            text:"Shooting finished, mission complete",
+        }
+        InsMgr.layer.show(UIID.GameOver,tdata);
     }
 
     updateEnemy(state) {
@@ -225,13 +236,13 @@ export class HeroTestMgr extends Component {
         }
     }
     protected onDestroy(): void {
-        InsMgr.event.off(HeroEvent.BUTTLET);
+        InsMgr.event.off(HeroEvent.ENEMY);
         InsMgr.event.off(HeroEvent.DIEENEMY);
         InsMgr.event.off(HeroEvent.ATTENEMY);
         InsMgr.event.off(HeroEvent.HEROEND);
         this.buttletMgr.onDestroy();
         this.buttletMgr=null;
-        console.log("销毁 当前打豆豆面板");
+
     }
 }
 
