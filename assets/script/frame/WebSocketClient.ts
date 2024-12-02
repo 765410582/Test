@@ -72,7 +72,7 @@ export class WebSocketClient {
 
     // 接收消息处理
     protected onMessage(data: string) {
-        console.log("Received message:", data);
+        // console.log("Received message:", data);
     }
 }
 

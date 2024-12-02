@@ -1,10 +1,10 @@
-import { _decorator, BoxCollider2D, Collider2D, Color, Component, Contact2DType, IPhysics2DContact,RigidBody2D,SpringJoint2D,Sprite,v3, Vec3 } from 'cc';
+import { _decorator, BoxCollider2D, Collider2D, Color, Component, Contact2DType, instantiate, IPhysics2DContact,RigidBody2D,SpringJoint2D,Sprite,v3, Vec3 } from 'cc';
 
 
 import { InsMgr } from '../../frame/InsMgr';
 import { HeroEvent } from './HeroTestMgr';
 import { buttlet } from './buttlet/buttlet';
-import { Laser } from './att/Laser';
+import { hurt, HurtType } from './hurt';
 const { ccclass, property } = _decorator;
 @ccclass('enemy')
 export class enemy extends Component {
@@ -54,10 +54,15 @@ export class enemy extends Component {
     }
 
     updatePh(ph){
+        if(ph<=0)return;
+        let data = {hurt:ph,type:HurtType.normal,time:1,speed:20,pos:this.node.position}
+        InsMgr.event.emit(HeroEvent.HURT, data);
         this.param.ph -=ph;
         if (this.param.ph <= 0) {
             InsMgr.event.emit(HeroEvent.DIEENEMY, {enemy:this.node});
         }
+
+        
     }
 
     getStartPos() {
@@ -100,9 +105,11 @@ export class enemy extends Component {
             this.attOpen=false;
             this.sprite.color=Color.WHITE;
         }
+        
     }
     
 
+    
     protected onDestroy(): void {
         let collider = this.node.getComponent(Collider2D);
         if (collider) {

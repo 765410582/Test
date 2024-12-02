@@ -1,4 +1,4 @@
-import { _decorator, Component, instantiate, Label, Node,  Size, UITransform, v3 } from 'cc';
+import { _decorator, Component, EditBox, instantiate, Label, Node,  Size, UITransform, v3 } from 'cc';
 
 import { enemy } from './enemy';
 import { hero } from './hero';
@@ -7,6 +7,8 @@ import { InsMgr } from '../../frame/InsMgr';
 import { UIID } from '../../main/ViewConfig';
 import { TimeType } from '../../frame/GameTime';
 import { ButtletMgr } from './buttlet/ButtletMgr';
+import { hurt, HurtType } from './hurt';
+import { ObjectPoolMgr } from '../../frame/ObjectPoolMgr';
 const { ccclass, property } = _decorator;
 const GameData = {
     hero: {
@@ -69,6 +71,7 @@ export enum HeroEvent {
     ATTENEMY = "ATTENEMY",
     HEROEND = "HEROEND",
     BULLET="BULLET",
+    HURT="HURT",
     
 }
 
@@ -107,6 +110,43 @@ export class HeroTestMgr extends Component {
         this.regiterEvent();
         this.regiterHero();
         this.addBitEnemy();
+        this.addTestEditBox();
+        ObjectPoolMgr.instance.create("hurt")
+    }
+
+    addTestEditBox(){
+        let list=["EditBox_COMBO","EditBox_VOLLEY","EditBox_TIME","EditBox_LASER","EditBox_SECOND"];
+        let list_ch=["连击","排枪","时间","激光","次级子弹"];
+        for(let i=0;i<list.length;i++){
+            let path=`layoutlist/${list[i]}`;
+            let node=this.node.getChildByPath(path);
+            node.getComponent(EditBox).placeholder=list_ch[i];
+            node.on("text-changed",(editbox)=>{
+                let str=editbox.string;
+                if(str.length==0){
+                    return;
+                }
+                let num=parseInt(str);
+                switch(editbox.placeholder){
+                    case "连击":
+                        this.buttletMgr.combo=num;
+                        break;
+                    case "排枪":
+                        this.buttletMgr.volley=num;
+                        break;
+                    case "时间":
+                        this.buttletMgr.fireTime=num;
+                        break;
+                    case "激光":
+                        this.buttletMgr.IsLaset=num>0?true:false;
+                        break;
+                    case "次级子弹":
+                        this.buttletMgr.IsSecondBullet=num>0?true:false;
+                    break;
+                }
+            })
+        }
+        
     }
 
     regiterUI() {
@@ -123,6 +163,8 @@ export class HeroTestMgr extends Component {
         InsMgr.event.on(HeroEvent.DIEENEMY, this.clearEnemy, this);
         InsMgr.event.on(HeroEvent.ATTENEMY, this.attEnemy, this);
         InsMgr.event.on(HeroEvent.HEROEND, this.heroEnd, this);
+        InsMgr.event.on(HeroEvent.HURT, this.heroHurt, this);
+        
     }
 
     addBitEnemy(){
@@ -169,6 +211,17 @@ export class HeroTestMgr extends Component {
         this.enemyList.push(node);
     }
 
+    async addHurt(data){
+        let info = { handle: "handleA", prefab: "prefab/hurt" }
+        let node =ObjectPoolMgr.instance.get("hurt")
+        if(!node){
+            let prefab: any = await InsMgr.res.getPrefab(info);
+             node = instantiate(prefab);
+        }
+        node.position=data.pos;
+        node.parent = this.node;
+        node.addComponent(hurt).init(data);
+    }
 
 
     attEnemy(event, data) {
@@ -208,6 +261,10 @@ export class HeroTestMgr extends Component {
         InsMgr.layer.show(UIID.GameOver,tdata);
     }
 
+
+    heroHurt(event,data){
+        this.addHurt(data)
+    }
     updateEnemy(state) {
         for (let i = 0; i < this.enemyList.length; i++) {
             let tenemy = this.enemyList[i].getComponent(enemy);
@@ -240,6 +297,7 @@ export class HeroTestMgr extends Component {
         InsMgr.event.off(HeroEvent.DIEENEMY);
         InsMgr.event.off(HeroEvent.ATTENEMY);
         InsMgr.event.off(HeroEvent.HEROEND);
+        InsMgr.event.off(HeroEvent.HURT);
         this.buttletMgr.onDestroy();
         this.buttletMgr=null;
 

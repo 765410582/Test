@@ -1,24 +1,39 @@
-import { _decorator, assetManager, Component, director, instantiate, Node, Prefab, resources, UITransform, Widget } from 'cc';
+import { _decorator, Component, director, instantiate, Node, Prefab, resources, UITransform, Widget } from 'cc';
 import { LayerType, UIConfigData, UIID } from '../main/ViewConfig';
 import { mayThrowError } from '../main/ToolHelper/ToolHelper';
 import { InsMgr } from './InsMgr';
 const { ccclass, property } = _decorator;
-export var NextLayer = [];
+function logContext(target: any, methodName: string, descriptor: PropertyDescriptor) {
+    const originalMethod = descriptor.value;
+    descriptor.value = function (...args: any[]) {
+        const context = {
+            class: target.constructor.name,
+            method: methodName,
+        };
+        console.log(`方法 ${context.method} 在 ${context.class} 类中被调用`);
+     
+        return originalMethod.apply(this, args);
+    };
+
+    return descriptor;
+}
+
 @ccclass('LayerManager')
 export class LayerManager extends Component {
-    private layerList = {};
+    private layerList: any = {};
     private rootList = {};
+    private nextLayer = [];
     /**
-     * 创建UI层
-     * 此函数负责在当前场景的Canvas下创建各种类型的UI层每个UI层都对应一个Node，并设置其属性
-     * @param cb 可选的回调函数，当所有UI层创建完毕后调用
-     */
+  * 创建UI层
+  * 此函数负责在当前场景的Canvas下创建各种类型的UI层每个UI层都对应一个Node，并设置其属性
+  * @param cb 可选的回调函数，当所有UI层创建完毕后调用
+  */
     createUILayer(cb?) {
         let root = director.getScene().getChildByPath("Canvas/root");
         let keys = Object.keys(LayerType)
         let index = 0;
         let len = keys.length;
-        keys.forEach(key => {
+        for (const key of keys) {
             let type = LayerType[key];
             let node = new Node(type);
             node.addComponent(UITransform)
@@ -29,11 +44,11 @@ export class LayerManager extends Component {
             if (index == len) {
                 if (typeof cb == 'function') cb();
             }
-        });
+        }
     }
 
-
-    async show(name, param = null, cb = null) {
+    @logContext
+    async show<T extends UIID>(name: T, param = null, cb: Function = null) {
         let layer1 = this.has(name);
         if (layer1) {
             console.warn("layer is exits");
@@ -56,17 +71,18 @@ export class LayerManager extends Component {
             if (mgr) mgr.init(param)
             if (typeof cb == 'function') cb();
             if (layer == LayerType.UI) {
-                NextLayer.push(name);
+                this.nextLayer.push(name);
+                console.log("this.nextLayer",this.nextLayer);
             }
         }
     }
 
 
-    has(name): Node {
+    has<T extends UIID>(name: T): Node {
         return this.layerList[name];
     }
 
-    hide(name, cb = null) {
+    hide<T extends UIID>(name: T, cb = null) {
         let layer = this.has(name);
         if (layer) {
             layer.destroy();
@@ -76,6 +92,8 @@ export class LayerManager extends Component {
             console.warn("layer not is exits");
         }
     }
+    //==================================================================处理层级-代码不太严谨=================================================================================
+
     /**
      * 获取下一个层级中的倒数第二个层级
      * 
@@ -85,24 +103,22 @@ export class LayerManager extends Component {
      * @returns {Any} 返回NextLayer数组中的倒数第二个元素
      */
     getPreLayer() {
-        if (NextLayer.length < 2) {
+        let len = this.nextLayer.length
+        if (len < 2) {
             throw new mayThrowError("NextLayer数组至少有两个元素")
         }
-        return NextLayer[NextLayer.length - 2]
+        return this.nextLayer[len - 2]
     }
 
     getCurLevel() {
-        for (let i = NextLayer.length - 1; i >= 0; i--) {
-            let element = UIConfigData[NextLayer[i]]
+        let len = this.nextLayer.length
+        for (let i = len - 1; i >= 0; i--) {
+            let element = UIConfigData[this.nextLayer[i]]
             if (element.layer == LayerType.UI) {
-                return NextLayer[i];
+                return this.nextLayer[i];
             }
         }
     }
-
-
-
-
 }
 
 

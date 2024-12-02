@@ -5,9 +5,9 @@ const { ccclass, property } = _decorator;
 @ccclass('Laser')
 export class Laser extends Component {
     param: any;
-    Apk: number = 100;
+    Apk: number = 200;
     isEnemyDie: boolean = false;
-    attTime: number = 0.1;
+    attTime: number =0.2;
     initTime: number = 0;
     init(param) {
         this.param = param;
@@ -28,7 +28,7 @@ export class Laser extends Component {
             this.node.angle = angle + 180;
             this.initTime += dt;
             if (this.initTime > this.attTime) {
-                this.attTime = 0;
+                this.initTime = 0;
                 target.getComponent(enemy).updatePh(this.Apk);
             }
         } else {

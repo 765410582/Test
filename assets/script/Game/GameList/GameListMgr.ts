@@ -20,8 +20,9 @@ export class GameListMgr extends Component {
         this.scrollListCtrl = this.scorllNode.getComponent(ScrollView)
         this.addData();
         let tobj=InsMgr.data.getData("ui1")
-        let tdata=InsMgr.data.getUser(tobj,["description","key","value"]);
-        console.log("tdata:",tdata);
+        let tdata=InsMgr.data.getUserPropertys(tobj);
+        let temp_data=tdata(["description","key","value"])
+        console.log("tdata:",temp_data);
 
     }
     addData() {
@@ -31,11 +32,9 @@ export class GameListMgr extends Component {
             , UIID.HeroTest
             , UIID.RedGreenLight
             , UIID.SelectColor
-            , UIID.Tetris, , , ,, , , ,, , , ,, , , ,,
-            , , , ,, , , ,, , , ,, , , ,, , , ,, , , ,
-            , , , ,, , , ,, , , ,, , , ,, , , ,, , , ,
+            , UIID.Tetris, , , ,, 
         ];
-        let result = InsMgr.data.queryData(item => item.value.name.indexOf("item") != -1)
+        let result = InsMgr.data.getQueryData(item => item.value.name.indexOf("item") != -1)
       
         for (let i = 0; i < result.length; i++) {
             let param = {

@@ -1,7 +1,7 @@
 import { _decorator, assetManager, Component, director, instantiate, Label, Prefab, resources, UITransform } from 'cc';
-import { NextLayer } from './frame/LayerManager';
 import { InsMgr } from './frame/InsMgr';
 import { UIID } from './main/ViewConfig';
+import { TempTest } from './main/ToolHelper/TempTest';
 
 export const EventType = {
   GameEnd: "GameEnd",
@@ -17,7 +17,7 @@ interface GameData {
 }
 
 
-export enum NetWorkInfo{
+export enum NetWorkInfo {
   loginReq,
   loginRes,
 }
@@ -33,6 +33,18 @@ export class TestMain extends Component {
       InsMgr.layer.show(UIID.Loading);
     });
     InsMgr.time.init();
+
+    let temp_test = new TempTest();
+    temp_test.init();
+
+    let dd = ["asdf", "a", "a", "b"].reduce((obj, key) => {
+      obj[key] = (obj[key] || 0) + 1;
+      return obj;
+    }, {})
+
+    let ff = [[11, 33], 22].reduce((obj: any[], key) => obj.concat(key), [])
+    console.log("dd", dd, ff);
+  
   }
 
   // 确认结束游戏
@@ -42,7 +54,7 @@ export class TestMain extends Component {
     if (status) {
       let curLevel = InsMgr.layer.getPreLayer();
       InsMgr.layer.show(curLevel, null, () => {
-        InsMgr.layer.hide(page);
+        InsMgr.layer.hide(parseInt(page.toString()));
       });
       suc && suc(param);
       return;
@@ -50,7 +62,7 @@ export class TestMain extends Component {
     if (window.confirm('确定结束游戏吗？')) {
       let curLevel = InsMgr.layer.getPreLayer();
       InsMgr.layer.show(curLevel, null, () => {
-        InsMgr.layer.hide(page);
+        InsMgr.layer.hide(parseInt(page.toString()));
       });
       suc && suc(param);
       return true;

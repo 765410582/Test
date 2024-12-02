@@ -1,5 +1,4 @@
 import { math, v2, Vec3 } from "cc";
-import { mayThrowError } from "../../../main/ToolHelper/ToolHelper";
 import { ChessFlag, ChessStatus, ChessType } from "../ConstValue";
 
 export interface Model {

@@ -1,9 +1,6 @@
 import { __private, _decorator, Color, Component, director, EventTouch, gfx, Label, Node, Rect, Sprite, SpriteFrame, Texture2D, tween, UITransform, v2, v3, Vec2, Vec3, Widget } from 'cc';
 import { ReNodeData } from '../ConfigData';
-import { EventMgr } from '../../frame/EventMgr';
 import { EventType } from '../../TestMain';
-import { LayerType, UIConfigData, UIID } from '../ViewConfig';
-import { NextLayer } from '../../frame/LayerManager';
 import { InsMgr } from '../../frame/InsMgr';
 import { l10n } from 'db://localization-editor/l10n'
 const { ccclass, property } = _decorator;
@@ -368,11 +365,11 @@ export class ToolHelper extends Component {
     }
 
     // 通过自身位置和弧度预算出目标位置
-    getTargetPos(angle, pos,distance=1) {
-        
-        const targetX = pos.x + Math.cos(angle)*distance;
-        const targetY = pos.y + Math.sin(angle)*distance;
-        return v3(targetX,targetY,0)
+    getTargetPos(angle, pos, distance = 1) {
+
+        const targetX = pos.x + Math.cos(angle) * distance;
+        const targetY = pos.y + Math.sin(angle) * distance;
+        return v3(targetX, targetY, 0)
     }
 
     getTextureToSpriteFrame(tex: Texture2D): SpriteFrame {
@@ -381,6 +378,58 @@ export class ToolHelper extends Component {
         return sf;
     }
 
+
+/**
+ * 合并两个对象的实例属性和原型，创建一个新的对象
+ * 此函数旨在合并两个对象的属性和原型，生成一个新的具有合并后特性的对象
+ * @param {Object} obj1 - 第一个对象，其属性和原型将被合并
+ * @param {Object} obj2 - 第二个对象，其属性和原型将被合并
+ * @returns {Object} - 返回一个新的对象，具有合并后 obj1 和 obj2 的实例属性和原型
+ */
+    mergeObjectsWithPrototype(obj1, obj2) {
+        // 创建一个新对象，其原型是 obj1 和 obj2 原型的合并
+        const mergedPrototype = Object.create(Object.prototype);
+
+        // 合并原型：使用 `Object.getPrototypeOf()` 获取原型，并手动合并
+        Object.setPrototypeOf(mergedPrototype, obj1.constructor.prototype);
+        Object.setPrototypeOf(mergedPrototype, obj2.constructor.prototype);
+
+        // 创建新对象，原型是合并后的原型
+        const mergedObject = Object.create(mergedPrototype);
+
+        // 合并实例属性
+        Object.assign(mergedObject, obj1, obj2);
+
+        return mergedObject;
+    }
+
+     getBrowser() {
+        const userAgent = navigator.userAgent;
+      
+        // 检查 Chrome 浏览器
+        if (userAgent.includes("Chrome") && !userAgent.includes("Edge") && !userAgent.includes("OPR")) {
+          return "Chrome";
+        }
+        
+        // 检查 Firefox 浏览器
+        if (userAgent.includes("Firefox")) {
+          return "Firefox";
+        }
+      
+        // 检查 Safari 浏览器
+        if (userAgent.includes("Safari") && !userAgent.includes("Chrome")) {
+          return "Safari";
+        }
+      
+        // 检查 Edge 浏览器
+        if (userAgent.includes("Edg")) {
+          return "Edge";
+        }
+      
+        // 其他浏览器
+        return "Unknown Browser";
+      }
+      
 }
 
 export class mayThrowError {

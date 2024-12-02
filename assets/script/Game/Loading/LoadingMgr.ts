@@ -5,8 +5,14 @@ import { UIConfigData, UIID } from '../../main/ViewConfig';
 
 import { l10n } from 'db://localization-editor/l10n'
 import { NetWorkInfo } from '../../TestMain';
-const loadData = [{ path: "prefab", type: Prefab, dec: "预制体", handle: "bundleA" }, { path: "ui", type: SpriteFrame, dec: "精灵贴图", handle: "bundleA" }, { path: "tex", type: Texture2D, dec: "图片原始数据", handle: "bundleA" }];
+const loadData = [
+    { path: "prefab", type: Prefab, dec: "预制体", handle: "bundleA" }, 
+    { path: "ui", type: SpriteFrame, dec: "精灵贴图", handle: "bundleA" }, 
+    { path: "tex", type: Texture2D, dec: "图片原始数据", handle: "bundleA" }
+];
 const { ccclass, property } = _decorator;
+
+
 @ccclass('LoadingMgr')
 export class LoadingMgr extends Component {
     private _progress: number;
@@ -24,8 +30,10 @@ export class LoadingMgr extends Component {
         
 
         this.loading();
-    }
+   }
+   
     async loading() {
+
         loadData.forEach(async element => {
             console.log();
             await InsMgr.task.add(element.path, 1, async (t, progressCallback) => {

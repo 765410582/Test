@@ -15,7 +15,7 @@ export class buttlet extends Component {
     private position: Vec3;
     private speed: Vec2 = v2(30, 30);
     private direction: Vec2;
-    Apk: number = 5;
+    Apk: number = 50;
     isStop: boolean = false;
     bulletCount: number = 0;
     state: BulletState = BulletState.DEFALT;
@@ -67,7 +67,6 @@ export class buttlet extends Component {
         InsMgr.event.emit(HeroEvent.BULLET,data);
         this.isStop = true;
         this.node.destroy();
-        // ObjectPoolMgr.instance.put(BulletPoolPath, this.node);
     }
 }
 

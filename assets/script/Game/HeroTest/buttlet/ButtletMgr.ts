@@ -16,20 +16,19 @@ export enum BulletType {
 export const BulletPoolPath: string = "bullet";
 @ccclass('ButtletMgr')
 export class ButtletMgr extends Component {
-
     param: any;
     time: number = 0;
     maxTime: number = 1;
     combo: number = 5;// 连击
-    volley: number = 2;  //  齐射
-    fireTime: number = 1;// 发射子弹时间
-    IsSecondBullet: boolean = true;//次级子弹
-    IsWallReflect: boolean = true;
-    IsFourBullet: boolean = true;
+    volley: number = 10;  //  齐射
+    fireTime: number = 0.2;// 发射子弹时间
+    IsSecondBullet: boolean = false;//次级子弹
+    IsWallReflect: boolean = false;
+    IsFourBullet: boolean = false;
     bulletList = [];
     isStop: boolean = false;
     laset: Laser;
-    IsLaset: boolean = true;
+    IsLaset: boolean = false;
     constructor(param?) {
         super();
         this.param = param;
@@ -141,7 +140,6 @@ export class ButtletMgr extends Component {
                     start: start, direction: curDirection, angle: curAngle
                     , order: order, popupSpeed: this.param.popupSpeed, type: BulletType.BULLET_MAIN
                 }
-
                 this.addBullet(curdata);
             }
         }
@@ -170,7 +168,7 @@ export class ButtletMgr extends Component {
     public async addLaser() {
         let data = this.getAllEnemy();
         if (data.length <= 0) {
-            console.log("没有敌人？,等待");
+            console.log("激光没有检测到敌人？,等待...");
             this.IsLaset=true;
             return;
         }
@@ -191,9 +189,9 @@ export class ButtletMgr extends Component {
         node.parent = this.param.test.node;
         this.laset = node.addComponent(Laser) as Laser;
         this.laset.init(tdata);
-        node.getComponent(UITransform).priority = 10
+        node.getComponent(UITransform).priority = 1;
     }
-    
+
     //  处理子弹
     bulletRemove(event, data) {
         let { node, type, result } = data;

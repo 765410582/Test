@@ -23,7 +23,7 @@ export class ObjectPoolMgr extends Component {
     }
     private pools: Map<string,NodePool> = new Map<string, NodePool>();
     private records: Map<string, Record> = new Map<string, Record>();
-    public create(key, data) {
+    public create(key, data=null) {
         if (!this.pools.has(key)) {
             let pool =new NodePool();
             this.pools.set(key, pool)

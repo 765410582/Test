@@ -105,12 +105,6 @@ export class ResLoadMode extends Component {
         }
     }
 
-    // 3.url 远程加载
-
-
-
-
-
 }
 
 
