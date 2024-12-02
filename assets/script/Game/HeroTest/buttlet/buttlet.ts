@@ -20,6 +20,8 @@ export class buttlet extends Component {
     bulletCount: number = 0;
     state: BulletState = BulletState.DEFALT;
     rigidbody: RigidBody2D;
+    suddenAttack:number=10;
+    suddenAttackRate:number=0.2;
     init(param) {
         this.param = param;
         let { start, direction, angle } = this.param;
@@ -67,6 +69,12 @@ export class buttlet extends Component {
         InsMgr.event.emit(HeroEvent.BULLET,data);
         this.isStop = true;
         this.node.destroy();
+    }
+
+    getApkInfo(){
+        let tempApk=this.suddenAttack*this.Apk;
+        let show=Math.random()<this.suddenAttackRate?true:false;
+        return {Apk:this.Apk,AttAPk:tempApk,Show:show}
     }
 }
 

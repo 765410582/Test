@@ -27,7 +27,7 @@ const { ccclass, property } = _decorator;
 export class TestMain extends Component {
 
   start() {
-    InsMgr.net.connect();
+    
     InsMgr.event.on(EventType.GameEnd, this.GameEnd);
     InsMgr.layer.createUILayer(() => {
       InsMgr.layer.show(UIID.Loading);
@@ -42,9 +42,10 @@ export class TestMain extends Component {
       return obj;
     }, {})
 
-    let ff = [[11, 33], 22].reduce((obj: any[], key) => obj.concat(key), [])
+
+    let ff=InsMgr.tool.flattenArray([[11, 33,[55,66]], 22],10);
     console.log("dd", dd, ff);
-  
+
   }
 
   // 确认结束游戏

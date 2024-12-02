@@ -1,4 +1,4 @@
-import { _decorator, BoxCollider2D, Collider2D, Color, Component, Contact2DType, instantiate, IPhysics2DContact,RigidBody2D,SpringJoint2D,Sprite,v3, Vec3 } from 'cc';
+import { _decorator, BoxCollider2D, Collider2D, Color, Component, Contact2DType, instantiate, IPhysics2DContact, RigidBody2D, SpringJoint2D, Sprite, v3, Vec3 } from 'cc';
 
 
 import { InsMgr } from '../../frame/InsMgr';
@@ -13,12 +13,12 @@ export class enemy extends Component {
     private pos: Vec3;
 
     private running: boolean = false;
-    private attTime:number=0;
-    private _pause:boolean=true;
-    private attTimer:number=0;
-    private attMaxTime:number=0.5;
-    private attOpen:boolean=false;
-    private sprite:Sprite;
+    private attTime: number = 0;
+    private _pause: boolean = true;
+    private attTimer: number = 0;
+    private attMaxTime: number = 0.5;
+    private attOpen: boolean = false;
+    private sprite: Sprite;
     get isPause() {
         return this._pause;
     }
@@ -33,7 +33,7 @@ export class enemy extends Component {
         if (collider) {
             collider.on(Contact2DType.BEGIN_CONTACT, this.onBeginContact, this);
         }
-        this.sprite=this.node.getChildByName("Sprite").getComponent(Sprite);
+        this.sprite = this.node.getChildByName("Sprite").getComponent(Sprite);
         this.schedule(this.onUpdate)
     }
     /**
@@ -42,27 +42,33 @@ export class enemy extends Component {
 * @param  {Collider} self  产生碰撞的自身的碰撞组件
 */
     onBeginContact(selfCollider: Collider2D, otherCollider: Collider2D, contact: IPhysics2DContact | null) {
-        let otherNode=otherCollider.node
+        let otherNode = otherCollider.node
         if (otherNode.name == "buttlet") {
-            let bullet=otherNode.getComponent(buttlet)
+            let bullet = otherNode.getComponent(buttlet)
             bullet.clearBullet(this.pos);
-           this.updatePh(bullet.Apk);
-            this.attOpen=true;
-            this.sprite.color=Color.RED;
-            this.attTimer=0;
+            this.dealPhInfo(bullet.getApkInfo());
+            this.attOpen = true;
+            this.sprite.color = Color.RED;
+            this.attTimer = 0;
         }
     }
 
-    updatePh(ph){
-        if(ph<=0)return;
-        let data = {hurt:ph,type:HurtType.normal,time:1,speed:20,pos:this.node.position}
-        InsMgr.event.emit(HeroEvent.HURT, data);
-        this.param.ph -=ph;
-        if (this.param.ph <= 0) {
-            InsMgr.event.emit(HeroEvent.DIEENEMY, {enemy:this.node});
+    dealPhInfo(data){
+        let { Apk, AttAPk, Show }=data;
+        this.updatePh(Apk);
+        if (Show) {
+            this.updatePh(AttAPk,HurtType.hurt);
         }
+    }
 
-        
+    updatePh(ph,type= HurtType.normal) {
+        if (ph <= 0) return;
+        let data = { hurt: ph, type: type, time: 1, speed: 20, pos: this.node.position }
+        InsMgr.event.emit(HeroEvent.HURT, data);
+        this.param.ph -= ph;
+        if (this.param.ph <= 0) {
+            InsMgr.event.emit(HeroEvent.DIEENEMY, { enemy: this.node });
+        }
     }
 
     getStartPos() {
@@ -77,39 +83,39 @@ export class enemy extends Component {
     }
 
     onUpdate(dt) {
-        if(!this.isPause)return;
-        if(this.running){
-            this.attTime+=dt;
-            if(this.attTime>=this.param.time){
-                this.attTime=0;
+        if (!this.isPause) return;
+        if (this.running) {
+            this.attTime += dt;
+            if (this.attTime >= this.param.time) {
+                this.attTime = 0;
                 InsMgr.event.emit(HeroEvent.ATTENEMY, this.param);
             }
-        }else{
-            this.pos  = v3(this.pos.x,this.pos.y-dt * this.param.speed,this.pos.z);
-            this.node.position = this.pos ;
-            let tempPos=this.pos.y-this.param.distance;
-            if ( tempPos< this.param.heroPos.y) {
-                this.running=true;
+        } else {
+            this.pos = v3(this.pos.x, this.pos.y - dt * this.param.speed, this.pos.z);
+            this.node.position = this.pos;
+            let tempPos = this.pos.y - this.param.distance;
+            if (tempPos < this.param.heroPos.y) {
+                this.running = true;
             }
         }
-        if(this.attOpen){
+        if (this.attOpen) {
             this.attRed(dt);
         }
-     
+
     }
 
     // 打到敌人
-    attRed(dt){
-        this.attTimer+=dt
-        if(this.attMaxTime<this.attTimer){
-            this.attOpen=false;
-            this.sprite.color=Color.WHITE;
+    attRed(dt) {
+        this.attTimer += dt
+        if (this.attMaxTime < this.attTimer) {
+            this.attOpen = false;
+            this.sprite.color = Color.WHITE;
         }
-        
-    }
-    
 
-    
+    }
+
+
+
     protected onDestroy(): void {
         let collider = this.node.getComponent(Collider2D);
         if (collider) {
@@ -118,7 +124,7 @@ export class enemy extends Component {
         this.unschedule(this.onUpdate);
     }
 
-  
+
 }
 
 

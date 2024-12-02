@@ -26,4 +26,5 @@ export class TempTest {
     sum(a: number, b: number, c: string,d:boolean): string {
         return a + b + c + d;
     }
+
 }

@@ -19,8 +19,8 @@ export class ButtletMgr extends Component {
     param: any;
     time: number = 0;
     maxTime: number = 1;
-    combo: number = 5;// 连击
-    volley: number = 10;  //  齐射
+    combo: number = 3;// 连击
+    volley: number = 3;  //  齐射
     fireTime: number = 0.2;// 发射子弹时间
     IsSecondBullet: boolean = false;//次级子弹
     IsWallReflect: boolean = false;
@@ -28,7 +28,8 @@ export class ButtletMgr extends Component {
     bulletList = [];
     isStop: boolean = false;
     laset: Laser;
-    IsLaset: boolean = false;
+    IsLaset: boolean = true;
+    ShowLaserTime: number = 5;
     constructor(param?) {
         super();
         this.param = param;
@@ -42,7 +43,7 @@ export class ButtletMgr extends Component {
         });
 
         InsMgr.event.on(HeroEvent.BULLET, this.bulletRemove, this);
-       
+
     }
     onUpdate(deltaTime: number) {
         if (this.isStop) {
@@ -59,9 +60,8 @@ export class ButtletMgr extends Component {
         if (this.IsLaset) {
             this.addLaser();
         }
-        
-
     }
+
     //检查敌人位置
     getCheckEnemy() {
         let nearest = null;
@@ -169,19 +169,22 @@ export class ButtletMgr extends Component {
         let data = this.getAllEnemy();
         if (data.length <= 0) {
             console.log("激光没有检测到敌人？,等待...");
-            this.IsLaset=true;
+            this.IsLaset = true;
             return;
         }
-        this.IsLaset=false;
+        this.IsLaset = false;
         let target = data[Math.floor(Math.random() * data.length)] as Node;
         let pos = v3(this.param.test.hero.position);
-
-        let tdata = { target: target, pos: v3(pos.x + 26 / 2, pos.y, 0) ,cb:()=>{
-            this.addLaser();
-        }}
-        if (this.laset) {
-            this.laset.init(tdata);
-            return;
+        let tdata = {
+            target: target, pos: pos,buttletmgr:this, cb: () => {
+                this.scheduleOnce(()=>{
+                    this.IsLaset=true;
+                },3)
+            }
+        }
+        if(this.laset){
+            this.laset.resetStart(tdata);
+            return; 
         }
         let info = { handle: "handleA", prefab: "prefab/laser" }
         let prefab: any = await InsMgr.res.getPrefab(info);
@@ -189,7 +192,7 @@ export class ButtletMgr extends Component {
         node.parent = this.param.test.node;
         this.laset = node.addComponent(Laser) as Laser;
         this.laset.init(tdata);
-        node.getComponent(UITransform).priority = 1;
+        
     }
 
     //  处理子弹

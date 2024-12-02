@@ -25,8 +25,7 @@ export class LoadingMgr extends Component {
         this.progressBar = this.node.getChildByName("ProgressBar").getComponent(ProgressBar);
         this.barLabel = this.node.getChildByName("barLabel").getComponent(Label);
         InsMgr.layer.show(UIID.NetLoading);
-        let login={cmd:NetWorkInfo.loginReq,username:"test",password:"123456"}
-        InsMgr.net.sendMessage(JSON.stringify(login))
+        
         
 
         this.loading();

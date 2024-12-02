@@ -429,6 +429,14 @@ export class ToolHelper extends Component {
         // 其他浏览器
         return "Unknown Browser";
       }
+
+    //   展开数组层数
+    flattenArray(arr, depth = 1) {
+        return arr.reduce((acc, val) => {
+            return acc.concat(depth > 1 && Array.isArray(val) ? this.flattenArray(val, depth - 1) : val);
+        }, []);
+    }
+
       
 }
 

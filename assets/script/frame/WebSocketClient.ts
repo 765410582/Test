@@ -77,3 +77,6 @@ export class WebSocketClient {
 }
 
 
+// InsMgr.net.connect();
+// let login={cmd:NetWorkInfo.loginReq,username:"test",password:"123456"}
+// InsMgr.net.sendMessage(JSON.stringify(login))
