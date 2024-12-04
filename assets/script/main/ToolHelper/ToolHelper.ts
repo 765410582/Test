@@ -1,8 +1,9 @@
-import { __private, _decorator, Color, Component, director, EventTouch, gfx, Label, Node, Rect, Sprite, SpriteFrame, Texture2D, tween, UITransform, v2, v3, Vec2, Vec3, Widget } from 'cc';
+import { __private, _decorator, Color, Component, director, EventTouch, gfx, instantiate, Label, Node, Rect, Sprite, SpriteFrame, Texture2D, tween, UITransform, v2, v3, Vec2, Vec3, Widget } from 'cc';
 import { ReNodeData } from '../ConfigData';
 import { EventType } from '../../TestMain';
 import { InsMgr } from '../../frame/InsMgr';
 import { l10n } from 'db://localization-editor/l10n'
+import { ObjectPoolMgr, PoolType } from '../../frame/ObjectPoolMgr';
 const { ccclass, property } = _decorator;
 
 @ccclass('ToolHelper')
@@ -274,18 +275,11 @@ export class ToolHelper extends Component {
         this.nodealign(node, ReNodeData);
         node.getChildByName("Label").getComponent(Label).string = l10n.t("return");
         node.on("click", () => {
-            this.layerEnd(cb)
+            InsMgr.gameinfo.exitGame(cb)
         });
     }
 
-    layerEnd(cb = null) {
-        InsMgr.event.emit(EventType.GameEnd, {
-            page: InsMgr.layer.getCurLevel(),
-            suc: () => {
-                cb && cb();
-            }
-        });
-    }
+    
 
     /**
      * 给节点添加或更新Widget组件，并设置对齐方式
@@ -437,6 +431,15 @@ export class ToolHelper extends Component {
         }, []);
     }
 
+    async getDealPool(type:PoolType,data:any){
+        let node=ObjectPoolMgr.instance.get(type)
+        if(!node){
+            let prefab: any = await InsMgr.res.getPrefab(data);
+             node = instantiate(prefab);
+        }
+
+        return node;
+    }
       
 }
 

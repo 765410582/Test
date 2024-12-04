@@ -1,7 +1,7 @@
 import { _decorator, Component, instantiate, Node, NodePool, UITransform, v2, v3, Vec2, Vec3 } from 'cc';
 import { InsMgr } from '../../../frame/InsMgr';
 import { BulletState, buttlet } from './buttlet';
-import { ObjectPoolMgr } from '../../../frame/ObjectPoolMgr';
+import { ObjectPoolMgr, PoolType } from '../../../frame/ObjectPoolMgr';
 import { HeroEvent } from '../HeroTestMgr';
 import { Laser } from '../att/Laser';
 const { ccclass, property } = _decorator;
@@ -13,7 +13,7 @@ export enum BulletType {
     BULLET_DEL = "BULLET_DEL"//子弹消除
 }
 
-export const BulletPoolPath: string = "bullet";
+
 @ccclass('ButtletMgr')
 export class ButtletMgr extends Component {
     param: any;
@@ -26,27 +26,19 @@ export class ButtletMgr extends Component {
     IsWallReflect: boolean = false;
     IsFourBullet: boolean = false;
     bulletList = [];
-    isStop: boolean = false;
     laset: Laser;
     IsLaset: boolean = true;
     ShowLaserTime: number = 5;
+    bulletLevel: number = 1;
+    bulletCount:number=0;
     constructor(param?) {
         super();
         this.param = param;
         this.schedule(this.onUpdate, this.fireTime);
-        ObjectPoolMgr.instance.create(BulletPoolPath, {
-            usageCounter: 0,
-            releaseCounter: 0,
-            minSize: 5,
-            maxSize: 10,
-            shrinkThreshold: 0.3
-        });
-
         InsMgr.event.on(HeroEvent.BULLET, this.bulletRemove, this);
-
     }
     onUpdate(deltaTime: number) {
-        if (this.isStop) {
+        if (InsMgr.gameinfo.isPause()) {
             return;
         }
         this.time += deltaTime;
@@ -106,7 +98,7 @@ export class ButtletMgr extends Component {
     bulletCombo(data) {
         if (this.combo > 0) {
             this.schedule(() => {
-                if (this.isStop) {
+                if (InsMgr.gameinfo.isPause()) {
                     return;
                 }
                 this.bulletVolley(data)
@@ -148,27 +140,29 @@ export class ButtletMgr extends Component {
 
     // 添加子弹
     async addBullet(data) {
-        let node = ObjectPoolMgr.instance.get(BulletPoolPath);
-        if (node) {
-            node.parent = this.param.test.node;
-            let bullet = node.getComponent(buttlet)
-            bullet.init(data);
-        } else {
-            let info = { handle: "handleA", prefab: "prefab/buttlet" }
-            let prefab: any = await InsMgr.res.getPrefab(info);
-            node = instantiate(prefab);
-            node.parent = this.param.test.node;
-            let bullet = node.addComponent(buttlet)
-            bullet.init(data);
+        this.bulletCount++;
+        if (this.bulletCount%10000==0) {
+            this.bulletLevel++;
         }
+        data=Object.assign(data,{level:this.bulletLevel})
+        let info = { handle: "handleA", prefab: "prefab/buttlet" }
+        let node = await InsMgr.tool.getDealPool(PoolType.BULLET, info)
+        node.parent = this.param.test.node;
+        let temp=node.getComponent(buttlet)
+        if (temp==null){
+            temp=node.addComponent(buttlet)
+        }
+        temp.init(data);
         this.bulletList.push(node);
+
+        
     }
 
     // 激光
     public async addLaser() {
         let data = this.getAllEnemy();
         if (data.length <= 0) {
-            console.log("激光没有检测到敌人？,等待...");
+            console.log("激光没有检测到敌人,等待中...");
             this.IsLaset = true;
             return;
         }
@@ -283,8 +277,6 @@ export class ButtletMgr extends Component {
 
     public onDestroy(): void {
         InsMgr.event.off(HeroEvent.BULLET);
-        ObjectPoolMgr.instance.delete(BulletPoolPath);
-        this.isStop = true;
         this.unschedule(this.onUpdate);
         for (let i = 0; i < this.bulletList.length; i++) {
             let bullet = this.bulletList[i];

@@ -1,4 +1,5 @@
 
+import { GameInfo } from "../GameInfo";
 import { DataDictionary } from "../main/DataDictionary";
 import { ToolHelper } from "../main/ToolHelper/ToolHelper";
 import { EventMgr } from "./EventMgr";
@@ -19,6 +20,7 @@ export class InsMgr {
     static res=new ResLoadMode();
     static time=new GameTime();
     static net=new WebSocketClient(url);
+    static gameinfo=new GameInfo();
 }
 
 

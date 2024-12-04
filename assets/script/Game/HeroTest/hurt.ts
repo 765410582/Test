@@ -1,6 +1,6 @@
 import { _decorator, Color, Component, Label, Node, tween, v2, v3, Vec3 } from 'cc';
 import { TetrisMgr } from '../Tetris/TetrisMgr';
-import { ObjectPoolMgr } from '../../frame/ObjectPoolMgr';
+import { ObjectPoolMgr, PoolType } from '../../frame/ObjectPoolMgr';
 const { ccclass, property } = _decorator;
 
 export interface HrutData {
@@ -20,10 +20,14 @@ export class hurt extends Component {
     node_lable: Label;
     targetNode: Vec3;
 
+    onLoad(): void {
+
+
+
+    }
 
     init(param: HrutData) {
         this.param = param;
-        this.node_lable = this.node.getComponent(Label)
         this.targetNode = this.node.position;
         this.upateLabelInfo();
         this.moveEffect();
@@ -33,16 +37,19 @@ export class hurt extends Component {
         let { hurt, type, time, speed } = this.param;
         speed = (speed || 1)
         time = (time || 1)
-        this.node_lable.string = "+" + hurt;
+        this.node_lable = this.node.getComponent(Label)
+        let label_hurt = "-" + hurt;
         let color = Color.WHITE;
-        this.node_lable.fontSize=30
+        this.node_lable.fontSize = 30
         if (type == HurtType.hurt) {//暴击
             color = Color.RED;
-            this.node_lable.fontSize=38
+            this.node_lable.fontSize = 38
         } else if (type == HurtType.heal) {//回血
             color = Color.GREEN;
-            this.node_lable.fontSize=38
+            this.node_lable.fontSize = 38
+            label_hurt = "+" + hurt;
         }
+        this.node_lable.string = label_hurt;
         this.node_lable.color = color;
     }
     moveEffect() {
@@ -53,7 +60,7 @@ export class hurt extends Component {
         tween(this.node)
             .to(this.param.time, { position: targetPos })
             .call(() => {
-                ObjectPoolMgr.instance.put("hurt", this.node)
+                ObjectPoolMgr.instance.put(PoolType.DAMAGE, this.node)
             })
             .start()
     }

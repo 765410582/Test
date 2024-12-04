@@ -1,15 +1,21 @@
 import { _decorator, Component, Node, NodePool } from 'cc';
 import { InsMgr } from './InsMgr';
+import { HeroEvent } from '../Game/HeroTest/HeroTestMgr';
 const { ccclass, property } = _decorator;
-export interface Record {
-    usageCounter: number,
-    releaseCounter: number,
-    minSize: number,
-    maxSize: number,
-    shrinkThreshold: number,
-    createObject: Function
-}
 
+
+//伤害飘字预制体
+//子弹预制体
+export enum PoolType {
+    DAMAGE = "damage",
+    BULLET = "bullet",
+    ENEMY = "enemy",
+    ENEMY_BULLET = "enemy_bullet",
+    ENEMY_BULLET_SECOND = "enemy_bullet_second",
+    ENEMY_BULLET_FOUR = "enemy_bullet_four",
+    ENEMY_BULLET_WALL = "enemy_bullet_wall",
+
+}
 
 @ccclass('ObjectPoolMgr')
 export class ObjectPoolMgr extends Component {
@@ -21,41 +27,65 @@ export class ObjectPoolMgr extends Component {
         }
         return this._instance;
     }
-    private pools: Map<string,NodePool> = new Map<string, NodePool>();
-    private records: Map<string, Record> = new Map<string, Record>();
-    public create(key, data=null) {
+    private pools: Map<string, NodePool> = new Map<string, NodePool>();
+    private records: Map<string, number> = new Map<string, number>();
+    public create(key) {
         if (!this.pools.has(key)) {
-            let pool =new NodePool();
+            let pool = new NodePool(key);
             this.pools.set(key, pool)
-            this.records.set(key, data)
+            this.records.set(key, 0)
         }
     }
 
     public get(key: string): Node | null {
         let pool = this.pools.get(key);
         if (pool.size() > 0) {
+            let max_size = this.records.get(key);
+            InsMgr.event.emit(HeroEvent.UDPATEPOOL, { key: key, count: pool.size() - 1,max_size: max_size });
             return pool.get()
         }
         return null;
     }
 
     public put(key, node: Node) {
-        if(this.pools.has(key)){
+        if (this.pools.has(key)) {
             let pool = this.pools.get(key);
             if (pool) {
                 pool.put(node);
-            }else{
+                const size = pool.size();
+                if (this.records.get(key) < size) {
+                    this.records.set(key, size)
+                }
+                let max_size = this.records.get(key);
+                if(typeof max_size!="number"){
+                    max_size=0;
+                    console.log("this.records",this.records);
+                }
+                InsMgr.event.emit(HeroEvent.UDPATEPOOL, { key: key, count: size, max_size: max_size });
+            } else {
                 node.destroy();
             }
-        }else{
+        } else {
             node.destroy();
         }
+    }
+
+    public size(key) {
+        let pool = this.pools.get(key);
+        return pool.size();
     }
 
     public delete(key) {
         if (this.pools.has(key)) {
             this.pools.clear();
         }
+    }
+
+    public clear() {
+         this.pools.forEach((value,key)=>{
+            value.clear();
+         })
+         this.pools.clear();
     }
 
 

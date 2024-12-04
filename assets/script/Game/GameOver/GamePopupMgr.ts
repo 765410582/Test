@@ -11,8 +11,8 @@ export interface GameOverType{
     isCancel?:boolean
     
 }
-@ccclass('GameOverMgr')
-export class GameOverMgr extends Component {
+@ccclass('GamePopupMgr')
+export class GamePopupMgr extends Component {
     textLabel:Label;
     back:Node;
     confrme:Node;
@@ -28,19 +28,19 @@ export class GameOverMgr extends Component {
         this.textLabel=this.node.getChildByName("textLabel").getComponent(Label);
         this.titleLabel=this.node.getChildByName("titleLabel").getComponent(Label);
         this.back=this.node.getChildByName("back");
-        this.confrme=this.node.getChildByName("confrme");
-        this.cancel=this.node.getChildByName("cancel");
+        this.confrme=this.node.getChildByPath("layout/confrme");
+        this.cancel=this.node.getChildByPath("layout/cancel");
 
         this.back.on('click',()=>{
-            InsMgr.layer.hide(UIID.GameOver);
+            InsMgr.layer.hide(UIID.GamePopup);
             this.param.cancelCb()
         })
         this.confrme.on('click',()=>{
-            InsMgr.layer.hide(UIID.GameOver);
+            InsMgr.layer.hide(UIID.GamePopup);
             this.param.confireCb()
         })
         this.cancel.on('click',()=>{
-            InsMgr.layer.hide(UIID.GameOver);
+            InsMgr.layer.hide(UIID.GamePopup);
             this.param.cancelCb()
         })
 

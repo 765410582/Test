@@ -19,22 +19,22 @@ export class enemy extends Component {
     private attMaxTime: number = 0.5;
     private attOpen: boolean = false;
     private sprite: Sprite;
-    get isPause() {
-        return this._pause;
-    }
-    set isPause(value) {
-        this._pause = value;
-    }
+    collider: Collider2D;
+    private isDead: boolean = false;
+ 
     init(param) {
         this.param = param;
+        this.running = false;
+        this.isDead = false;
+   
         this.pos = this.getStartPos();
         this.node.position = this.pos;
-        let collider = this.node.getComponent(Collider2D);
-        if (collider) {
-            collider.on(Contact2DType.BEGIN_CONTACT, this.onBeginContact, this);
-        }
+        this.collider = this.node.getComponent(Collider2D);
+        this.collider.on(Contact2DType.BEGIN_CONTACT, this.onBeginContact, this);
         this.sprite = this.node.getChildByName("Sprite").getComponent(Sprite);
         this.schedule(this.onUpdate)
+        this.node.getComponent(RigidBody2D).wakeUp();
+        this.sprite.color = Color.WHITE;
     }
     /**
 * 当碰撞结束后调用
@@ -47,26 +47,32 @@ export class enemy extends Component {
             let bullet = otherNode.getComponent(buttlet)
             bullet.clearBullet(this.pos);
             this.dealPhInfo(bullet.getApkInfo());
-            this.attOpen = true;
-            this.sprite.color = Color.RED;
+            this.changeColor(Color.RED);
             this.attTimer = 0;
         }
     }
 
-    dealPhInfo(data){
-        let { Apk, AttAPk, Show }=data;
+    changeColor(color) {
+        this.attOpen = true;
+        this.sprite.color = color;
+    }
+
+    dealPhInfo(data) {
+        let { Apk, AttAPk, Show } = data;
         this.updatePh(Apk);
         if (Show) {
-            this.updatePh(AttAPk,HurtType.hurt);
+            this.updatePh(AttAPk, HurtType.hurt);
         }
     }
 
-    updatePh(ph,type= HurtType.normal) {
-        if (ph <= 0) return;
+    updatePh(ph, type = HurtType.normal) {
+        if (this.isDead) return;
         let data = { hurt: ph, type: type, time: 1, speed: 20, pos: this.node.position }
         InsMgr.event.emit(HeroEvent.HURT, data);
         this.param.ph -= ph;
         if (this.param.ph <= 0) {
+            this.rigidBodySleep();
+            this.onDestroy()
             InsMgr.event.emit(HeroEvent.DIEENEMY, { enemy: this.node });
         }
     }
@@ -83,7 +89,7 @@ export class enemy extends Component {
     }
 
     onUpdate(dt) {
-        if (!this.isPause) return;
+        if (InsMgr.gameinfo.isPause()) return;
         if (this.running) {
             this.attTime += dt;
             if (this.attTime >= this.param.time) {
@@ -111,16 +117,19 @@ export class enemy extends Component {
             this.attOpen = false;
             this.sprite.color = Color.WHITE;
         }
-
     }
 
-
-
+    rigidBodySleep(){
+        if (this.sprite)
+            this.sprite.color = Color.WHITE;
+        if (this.node)
+            this.node.getComponent(RigidBody2D).sleep()
+        if (this.collider)
+            this.collider.off(Contact2DType.BEGIN_CONTACT, this.onBeginContact, this);
+    }
     protected onDestroy(): void {
-        let collider = this.node.getComponent(Collider2D);
-        if (collider) {
-            collider.off(Contact2DType.BEGIN_CONTACT, this.onBeginContact, this);
-        }
+        this.running = false;
+        this.isDead = true;
         this.unschedule(this.onUpdate);
     }
 

@@ -39,6 +39,10 @@ export class GameTime extends Component {
         this._task_time.push(data)
     }
 
+
+    claerTaskTime(){
+        this._task_time=[];
+    }
     updateOtherTime(){
         this._task_time.forEach((v:ITimeData,k:TimeType)=>{
             let {time ,event,data}=v;

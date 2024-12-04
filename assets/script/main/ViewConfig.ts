@@ -28,7 +28,7 @@ export enum UIID{
     PanelPopup,
     NetLoading,
     Tetris,
-    GameOver,
+    GamePopup,
 }
 export var UIConfigData={
     // resources
@@ -43,7 +43,7 @@ export var UIConfigData={
     [UIID.GravityRollerCoaster]:{layer: LayerType.UI, prefab: "prefab/GravityRollerCoaster",uiclass: "GravityRollerCoasterMgr",handle:"bundleA"},
     [UIID.PanelPopup]:{layer: LayerType.PopUp, prefab: "prefab/PanelPopup",uiclass: "PanelPopupMgr",handle:"bundleA"},
     [UIID.Tetris]:{layer: LayerType.UI, prefab: "prefab/Tetris",uiclass: "TetrisMgr",handle:"bundleA"},
-    [UIID.GameOver]:{layer: LayerType.PopUp, prefab: "prefab/GameOver",uiclass: "GameOverMgr",handle:"bundleA"},
+    [UIID.GamePopup]:{layer: LayerType.PopUp, prefab: "prefab/GamePopup",uiclass: "GamePopupMgr",handle:"bundleA"},
     
     
 }
