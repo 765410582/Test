@@ -29,23 +29,15 @@ export class TestMain extends Component {
   start() {
     
     InsMgr.event.on(EventType.GameEnd, this.GameEnd);
-    InsMgr.layer.createUILayer(() => {
-      InsMgr.layer.show(UIID.Loading);
-    });
+    
     InsMgr.time.init();
-
-    let temp_test = new TempTest();
-    temp_test.init();
-
-    let dd = ["asdf", "a", "a", "b"].reduce((obj, key) => {
-      obj[key] = (obj[key] || 0) + 1;
-      return obj;
-    }, {})
-
-
-    let ff=InsMgr.tool.flattenArray([[11, 33,[55,66]], 22],10);
-    console.log("dd", dd, ff);
-
+    InsMgr.layer.createUILayer();
+    let StartGame=this.node.getChildByPath("StartGame")
+    let StartGame_Btn=this.node.getChildByPath("StartGame/Button")
+    StartGame_Btn.on('click',()=>{
+      StartGame.active=false;
+      InsMgr.layer.show(UIID.Loading);
+    })
   }
 
   // 确认结束游戏

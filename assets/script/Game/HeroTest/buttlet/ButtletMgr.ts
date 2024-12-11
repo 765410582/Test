@@ -4,6 +4,7 @@ import { BulletState, buttlet } from './buttlet';
 import { ObjectPoolMgr, PoolType } from '../../../frame/ObjectPoolMgr';
 import { HeroEvent } from '../HeroTestMgr';
 import { Laser } from '../att/Laser';
+import { enemy } from '../enemy';
 const { ccclass, property } = _decorator;
 
 // 子弹类型
@@ -18,7 +19,7 @@ export enum BulletType {
 export class ButtletMgr extends Component {
     param: any;
     time: number = 0;
-    maxTime: number = 1;
+    maxTime: number = 2;
     combo: number = 3;// 连击
     volley: number = 3;  //  齐射
     fireTime: number = 0.2;// 发射子弹时间
@@ -27,10 +28,11 @@ export class ButtletMgr extends Component {
     IsFourBullet: boolean = false;
     bulletList = [];
     laset: Laser;
-    IsLaset: boolean = true;
+
     ShowLaserTime: number = 5;
     bulletLevel: number = 1;
-    bulletCount:number=0;
+    bulletCount: number = 0;
+    enemyIndex: number = null;
     constructor(param?) {
         super();
         this.param = param;
@@ -49,33 +51,31 @@ export class ButtletMgr extends Component {
                 this.bulletCombo(data);
             }
         }
-        if (this.IsLaset) {
-            this.addLaser();
-        }
     }
 
     //检查敌人位置
     getCheckEnemy() {
         let nearest = null;
         let target = this.param.test.hero.position;
-        if (this.param.test.curAttTarget) {
-            nearest = this.param.test.curAttTarget.position;
-        } else {
+        if (!this.enemyIndex) {
             let len = this.param.test.enemyList.length;
             if (len <= 0) { return null; }
-            nearest = this.param.test.enemyList[0].position;
-            this.param.test.curAttTarget = this.param.test.enemyList[0];
-            let minDistance = nearest.y - target.y;
-            this.param.test.enemyList.forEach(item => {
+            let minDistance = 100000;
+            for (let i = 0; i < this.param.test.enemyList.length; i++) {
+                let item = this.param.test.enemyList[i] as Node;
                 let coordinate = item.position
                 const distance = coordinate.y - target.y;
                 if (distance < minDistance) {
                     minDistance = distance;
                     nearest = coordinate;
                     this.param.test.curAttTarget = item;
+                    this.enemyIndex = item.getComponent(enemy).getIndex();
                 }
-            })
+            }
+        } else if (this.param.test.curAttTarget) {
+            nearest = this.param.test.curAttTarget.position;
         }
+
         let order = this.param.test.node.getComponent(UITransform).contentSize;
         const direction = InsMgr.tool.getCalculateDirection(nearest, target)
         const angle = InsMgr.tool.getCalculateDegrees(nearest, target);
@@ -138,56 +138,27 @@ export class ButtletMgr extends Component {
     }
 
 
-    // 添加子弹
+    // 添加基础子弹
     async addBullet(data) {
         this.bulletCount++;
-        if (this.bulletCount%10000==0) {
+        if (this.bulletCount % 10000 == 0) {
             this.bulletLevel++;
         }
-        data=Object.assign(data,{level:this.bulletLevel})
+        data = Object.assign(data, { level: this.bulletLevel })
         let info = { handle: "handleA", prefab: "prefab/buttlet" }
         let node = await InsMgr.tool.getDealPool(PoolType.BULLET, info)
         node.parent = this.param.test.node;
-        let temp=node.getComponent(buttlet)
-        if (temp==null){
-            temp=node.addComponent(buttlet)
+        let temp = node.getComponent(buttlet)
+        if (temp == null) {
+            temp = node.addComponent(buttlet)
         }
         temp.init(data);
         this.bulletList.push(node);
-
-        
     }
 
-    // 激光
-    public async addLaser() {
-        let data = this.getAllEnemy();
-        if (data.length <= 0) {
-            console.log("激光没有检测到敌人,等待中...");
-            this.IsLaset = true;
-            return;
-        }
-        this.IsLaset = false;
-        let target = data[Math.floor(Math.random() * data.length)] as Node;
-        let pos = v3(this.param.test.hero.position);
-        let tdata = {
-            target: target, pos: pos,buttletmgr:this, cb: () => {
-                this.scheduleOnce(()=>{
-                    this.IsLaset=true;
-                },3)
-            }
-        }
-        if(this.laset){
-            this.laset.resetStart(tdata);
-            return; 
-        }
-        let info = { handle: "handleA", prefab: "prefab/laser" }
-        let prefab: any = await InsMgr.res.getPrefab(info);
-        let node = instantiate(prefab);
-        node.parent = this.param.test.node;
-        this.laset = node.addComponent(Laser) as Laser;
-        this.laset.init(tdata);
-        
-    }
+
+
+
 
     //  处理子弹
     bulletRemove(event, data) {
@@ -196,7 +167,6 @@ export class ButtletMgr extends Component {
         if (index !== -1) {
             this.bulletList.splice(index, 1);
         }
-
         // 如果是主子弹
         if (type == BulletType.BULLET_MAIN) {
             switch (result) {
@@ -274,6 +244,16 @@ export class ButtletMgr extends Component {
     }
 
 
+    setEnemyInfo(index:number=null){
+        this.enemyIndex =index;
+    }
+
+    getCheckIndex(enemyindex: number) {
+        if(enemyindex==this.enemyIndex){
+            return true;
+        }
+        return false;
+    }
 
     public onDestroy(): void {
         InsMgr.event.off(HeroEvent.BULLET);

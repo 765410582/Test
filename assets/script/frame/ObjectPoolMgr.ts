@@ -19,28 +19,27 @@ export enum PoolType {
 
 @ccclass('ObjectPoolMgr')
 export class ObjectPoolMgr extends Component {
-    private static _instance: ObjectPoolMgr = null;
-
+    private static s_instance: ObjectPoolMgr = null;
+    private key_map: Map<string, NodePool> = new Map<string, NodePool>();
+    private key_record: Map<string, number> = new Map<string, number>();
     public static get instance() {
-        if (!this._instance) {
-            this._instance = new ObjectPoolMgr();
+        if (!this.s_instance) {
+            this.s_instance = new ObjectPoolMgr();
         }
-        return this._instance;
+        return this.s_instance;
     }
-    private pools: Map<string, NodePool> = new Map<string, NodePool>();
-    private records: Map<string, number> = new Map<string, number>();
+    
     public create(key) {
-        if (!this.pools.has(key)) {
-            let pool = new NodePool(key);
-            this.pools.set(key, pool)
-            this.records.set(key, 0)
+        if (!this.key_map.has(key)) {
+            this.key_map.set(key, new NodePool(key))
+            this.key_record.set(key, 0)
         }
     }
 
     public get(key: string): Node | null {
-        let pool = this.pools.get(key);
+        let pool = this.key_map.get(key);
         if (pool.size() > 0) {
-            let max_size = this.records.get(key);
+            let max_size = this.key_record.get(key);
             InsMgr.event.emit(HeroEvent.UDPATEPOOL, { key: key, count: pool.size() - 1,max_size: max_size });
             return pool.get()
         }
@@ -48,19 +47,15 @@ export class ObjectPoolMgr extends Component {
     }
 
     public put(key, node: Node) {
-        if (this.pools.has(key)) {
-            let pool = this.pools.get(key);
+        if (this.key_map.has(key)) {
+            let pool = this.key_map.get(key);
             if (pool) {
                 pool.put(node);
                 const size = pool.size();
-                if (this.records.get(key) < size) {
-                    this.records.set(key, size)
+                if (this.key_record.get(key) < size) {
+                    this.key_record.set(key, size)
                 }
-                let max_size = this.records.get(key);
-                if(typeof max_size!="number"){
-                    max_size=0;
-                    console.log("this.records",this.records);
-                }
+                let max_size = this.key_record.get(key);
                 InsMgr.event.emit(HeroEvent.UDPATEPOOL, { key: key, count: size, max_size: max_size });
             } else {
                 node.destroy();
@@ -69,23 +64,16 @@ export class ObjectPoolMgr extends Component {
             node.destroy();
         }
     }
-
     public size(key) {
-        let pool = this.pools.get(key);
+        let pool = this.key_map.get(key);
         return pool.size();
     }
 
-    public delete(key) {
-        if (this.pools.has(key)) {
-            this.pools.clear();
-        }
-    }
-
     public clear() {
-         this.pools.forEach((value,key)=>{
+         this.key_map.forEach((value,key)=>{
             value.clear();
          })
-         this.pools.clear();
+         this.key_map.clear();
     }
 
 

@@ -15,12 +15,12 @@ export class buttlet extends Component {
     private speed: Vec2 = v2(30, 30);
     private direction: Vec2;
     baseApk: number = 50;
-    Apk: number = 50;
+    Apk: number = 50000;
     isStop: boolean = false;
     bulletCount: number = 0;
     state: BulletState = BulletState.DEFALT;
     rigidbody: RigidBody2D;
-    suddenAttack: number = 10;
+    suddenAttack: number = 1000;
     suddenAttackRate: number = 0.2;
 
     init(param) {
@@ -72,7 +72,6 @@ export class buttlet extends Component {
         InsMgr.event.emit(HeroEvent.BULLET, data);
         this.isStop = true;
         ObjectPoolMgr.instance.put(PoolType.BULLET, this.node);
-        // this.node.destroy();
     }
 
     getApkInfo() {

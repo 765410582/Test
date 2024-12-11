@@ -14,13 +14,12 @@ export class enemy extends Component {
 
     private running: boolean = false;
     private attTime: number = 0;
-    private _pause: boolean = true;
     private attTimer: number = 0;
     private attMaxTime: number = 0.5;
     private attOpen: boolean = false;
     private sprite: Sprite;
-    collider: Collider2D;
-    private isDead: boolean = false;
+    private collider: Collider2D;
+    public isDead: boolean = false;
  
     init(param) {
         this.param = param;
@@ -126,6 +125,10 @@ export class enemy extends Component {
             this.node.getComponent(RigidBody2D).sleep()
         if (this.collider)
             this.collider.off(Contact2DType.BEGIN_CONTACT, this.onBeginContact, this);
+    }
+
+    getIndex(){
+        return this.param.index;
     }
     protected onDestroy(): void {
         this.running = false;

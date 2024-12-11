@@ -1,4 +1,4 @@
-import { _decorator, Component, EditBox, instantiate, Label, Node, Size, UITransform, v3 } from 'cc';
+import { _decorator, Component, EditBox, instantiate, Label, Node, Size, Sprite, UITransform, v3 } from 'cc';
 
 import { enemy } from './enemy';
 import { hero } from './hero';
@@ -8,6 +8,7 @@ import { TimeType } from '../../frame/GameTime';
 import { ButtletMgr } from './buttlet/ButtletMgr';
 import { hurt, HurtType } from './hurt';
 import { ObjectPoolMgr, PoolType } from '../../frame/ObjectPoolMgr';
+import { Laser } from './att/Laser';
 const { ccclass, property } = _decorator;
 const GameData = {
     hero: {
@@ -44,24 +45,32 @@ const GameData = {
         "4001": {
             id: "4001",
             level: 1,
-            att: 10,
+            att: 1000,
             spacing: 600,
             distance: 350
         },
         "4002": {
             id: "4002",
             level: 2,
-            att: 20,
+            att: 20000,
             spacing: 400,
             distance: 150
         }
     }
     ,
-    jewel: [
-        {
+    skill: {
+        "3001": {
             id: "3001",
-        }
-    ]
+            name: "激光",
+            des: "",
+            time: 5,
+            apk: 100,
+            lv: 1,
+            count: 1,
+            property: null,
+
+        },
+    }
 
 }
 export enum HeroEvent {
@@ -71,8 +80,11 @@ export enum HeroEvent {
     HEROEND = "HEROEND",
     BULLET = "BULLET",
     HURT = "HURT",
-    UDPATEPOOL="UDPATEPOOL"
+    UDPATEPOOL = "UDPATEPOOL"
 }
+
+
+
 
 
 @ccclass('HeroTestMgr')
@@ -80,20 +92,18 @@ export class HeroTestMgr extends Component {
     param = null;
     enemyList: Node[] = [];
     hero: Node;
-    boxSize: Size;
-
-    enemyLabel: Label;
     dieEnemy: number = 0;
-    buttletLevel: number = 1;
-    die: boolean = true;
-    curAttTarget: Node = null;
-    enemyCount: number = 0;
     enemyMax: number = 0;
     enemyLevel: number = 1;
     buttletMgr: ButtletMgr;
-    popupSpeed: number = 1;
-    poolInfoArr={};
-    
+    popupSpeed: number = 1.5;
+    poolInfoArr = {};
+    buttletEffect = [];
+    showEfect = [];
+    laset: any;
+
+
+
     init(param?) {
         this.param = param;
         InsMgr.gameinfo.startGame();
@@ -102,7 +112,7 @@ export class HeroTestMgr extends Component {
         ObjectPoolMgr.instance.create(PoolType.ENEMY)
 
         this.buttletMgr = new ButtletMgr({ test: this, popupSpeed: this.popupSpeed });
-        this.boxSize = this.node.getComponent(UITransform).contentSize
+
         this.regiterUI();
         this.regiterEvent();
         this.regiterHero();
@@ -110,66 +120,58 @@ export class HeroTestMgr extends Component {
         this.addTestEditBox();
         this.addPoolInfo();
 
-        
-       
+
     }
 
     addTestEditBox() {
-        let list = ["EditBox_COMBO", "EditBox_VOLLEY", "EditBox_TIME", "EditBox_LASER", "EditBox_SECOND"];
-        let list_ch = ["连击", "排枪", "时间", "激光", "次级子弹"];
+        let children = this.node.getChildByPath("layoutlist").children;
+        for (let i = 0; i < children.length; i++) {
+            let child = children[i]
+            let icon = child.getChildByName("icon");
+            icon.active = false;
+            let bar = child.getChildByName("bar");
+            bar.active = false;
+            let label = child.getChildByName("Label").getComponent(Label);
+            label.node.active = false;
+            bar.getComponent(Sprite).fillRange = 1;
+            this.buttletEffect.push({ icon: icon, bar: bar.getComponent(Sprite), label: label });
+        }
+
+
+    }
+
+    addShowEffect(data) {
+        let index = this.showEfect.length;
+        let effect = this.buttletEffect[index]
+        effect.icon.active = true;
+        effect.label.node.active = true;
+        this.showEfect.push(data);
+        if (this.showEfect.length == 1) {
+            this.schedule(this.onUpdate, 0.1);
+        }
+    }
+
+    addPoolInfo() {
+        let layoutinfo = this.node.getChildByName("layoutinfo")
+        let list = [PoolType.ENEMY, PoolType.BULLET, PoolType.DAMAGE]
         for (let i = 0; i < list.length; i++) {
-            let path = `layoutlist/${list[i]}`;
-            let node = this.node.getChildByPath(path);
-            node.getComponent(EditBox).placeholder = list_ch[i];
-            node.on("text-changed", (editbox) => {
-                let str = editbox.string;
-                if (str.length == 0) {
-                    return;
-                }
-                let num = parseInt(str);
-                switch (editbox.placeholder) {
-                    case "连击":
-                        this.buttletMgr.combo = num;
-                        break;
-                    case "排枪":
-                        this.buttletMgr.volley = num;
-                        break;
-                    case "时间":
-                        this.buttletMgr.fireTime = num;
-                        break;
-                    case "激光":
-                        this.buttletMgr.IsLaset = num > 0 ? true : false;
-                        break;
-                    case "次级子弹":
-                        this.buttletMgr.IsSecondBullet = num > 0 ? true : false;
-                        break;
-                }
-            })
-        }
-    }
-
-    addPoolInfo(){
-        let layoutinfo=this.node.getChildByName("layoutinfo")
-        let list=[PoolType.ENEMY,PoolType.BULLET,PoolType.DAMAGE]
-        for(let i=0;i<list.length;i++){
-            let label_pool=layoutinfo.getChildByName(`${list[i]}Label`).getComponent(Label)
+            let label_pool = layoutinfo.getChildByName(`${list[i]}Label`).getComponent(Label)
             label_pool.string = `${list[i]}_pool:${ObjectPoolMgr.instance.size(list[i])}`
-            this.poolInfoArr[list[i]]=label_pool;
+            this.poolInfoArr[list[i]] = label_pool;
         }
     }
 
-    updatePoolInfo(event ,data){
-        let {key,count,max_size}=data;
+    updatePoolInfo(event, data) {
+        let { key, count, max_size } = data;
         this.poolInfoArr[key].string = `${key}_pool:${count}---${max_size}`
     }
 
     regiterUI() {
-        this.enemyLabel = this.node.getChildByName("infoLabel").getComponent(Label) as Label;
         InsMgr.tool.reBtnCall(this.node.getChildByName("reBtn"), (state) => {
-            if(state){
+            if (state) {
                 InsMgr.gameinfo.startGame();
             }
-            
+
         });
         this.node.getChildByPath("sot/Label").getComponent(Label).string = `x${this.popupSpeed}`
         this.node.getChildByPath("sot").active = this.popupSpeed <= 1 ? false : true;
@@ -185,7 +187,7 @@ export class HeroTestMgr extends Component {
     }
 
     addBitEnemy() {
-        for (let i = 0; i < 100*this.enemyLevel; i++) {
+        for (let i = 0; i < 100 * this.enemyLevel; i++) {
             InsMgr.time.setTaskTime(TimeType.HeroTouch, {
                 time: 0.3 * i,
                 event: HeroEvent.ENEMY,
@@ -193,7 +195,6 @@ export class HeroTestMgr extends Component {
             });
             this.enemyMax++;
         }
-        console.log("this.enemyMax",this.enemyMax);
         this.updateEnemyLabel();
         this.enemyLevel++;
     }
@@ -217,17 +218,18 @@ export class HeroTestMgr extends Component {
     async addEnemy() {
         if (InsMgr.gameinfo.isPause()) return;
         let info = { handle: "handleA", prefab: "prefab/enemy" }
-        let node = await InsMgr.tool.getDealPool(PoolType.ENEMY, info)
-        node.parent = this.node;
         let size = this.node.getComponent(UITransform).contentSize;
         let arr = ["2001", "2002"]
         let id = arr[Math.floor(Math.random() * arr.length)];
         let item = structuredClone(GameData.enemy[id])
         item.ph = item.ph * this.enemyLevel;
-        let data = Object.assign(item, { order: size, heroPos: this.hero.position })
-        let temp=node.getComponent(enemy)
-        if (temp==null){
-            temp=node.addComponent(enemy)
+        let data = Object.assign(item, { order: size, heroPos: this.hero.position ,index:this.enemyList.length})
+
+        let node = await InsMgr.tool.getDealPool(PoolType.ENEMY, info)
+        node.parent = this.node;
+        let temp = node.getComponent(enemy)
+        if (temp == null) {
+            temp = node.addComponent(enemy)
         }
         temp.init(data);
         this.enemyList.push(node);
@@ -239,11 +241,47 @@ export class HeroTestMgr extends Component {
         node.parent = this.node;
         node.position = data.pos;
         node.parent = this.node;
-        let temp=node.getComponent(hurt)
-        if (temp==null){
-            temp=node.addComponent(hurt)
+        let temp = node.getComponent(hurt)
+        if (temp == null) {
+            temp = node.addComponent(hurt)
         }
         temp.init(data);
+    }
+
+
+    // 激光
+    public async addLaser(id: string, index: number) {
+        let data = this.enemyList;
+        if (data.length <= 0) {
+            console.log("激光没有检测到敌人,等待中...");
+            return;
+        }
+        console.log("开启激光");
+        this.showEfect[index].open = false;
+        let target = data[Math.floor(Math.random() * data.length)] as Node;
+        let pos = v3(this.hero.position);
+        let tdata = {
+            target: target, pos: pos, buttletmgr: this, id: id, cb: () => {
+                this.showEfect[index].state = 0;
+                this.showEfect[index].open = true;
+                console.log("激光结束");
+            }
+        }
+        if (this.laset) {
+            this.laset.resetStart(tdata);
+            return;
+        }
+        let info = { handle: "handleA", prefab: "prefab/laser" }
+        let prefab: any = await InsMgr.res.getPrefab(info);
+        let node = instantiate(prefab);
+        node.parent = this.node;
+        this.laset = node.addComponent(Laser) as Laser;
+        this.laset.init(tdata);
+
+        node.getComponent(UITransform).priority = 1;
+
+        this.showEfect[index].obj = this.laset;
+
     }
 
 
@@ -263,9 +301,7 @@ export class HeroTestMgr extends Component {
 
 
     heroEnd(event, data) {
-        if (!this.die) {
-            return;
-        }
+        if (InsMgr.gameinfo.isPause()) return;
         InsMgr.gameinfo.pauseGame();
         InsMgr.gameinfo.loseGame();
     }
@@ -276,26 +312,69 @@ export class HeroTestMgr extends Component {
     }
 
     updateEnemyLabel() {
-        this.enemyLabel.string = "Enemy Die:" + this.dieEnemy + "/" + this.enemyMax;
+        this.node.getChildByName("infoLabel").getComponent(Label).string = "Enemy Die:" + this.dieEnemy + "/" + this.enemyMax;
     }
 
     clearEnemy(event, data) {
+
         if (data && data.enemy) {
-            this.enemyList = this.enemyList.filter(item => data.enemy !== item)
-            if (data.enemy) {
-                if (this.curAttTarget == data.enemy) {
-                    this.curAttTarget = null;
+            let { enemy:enemy1 } = data;
+            if (enemy1.getComponent(enemy)) {
+                let index=enemy1.getComponent(enemy).getIndex()
+                if(this.buttletMgr.getCheckIndex(index)){
+                    this.buttletMgr.setEnemyInfo();
                 }
-                ObjectPoolMgr.instance.put(PoolType.ENEMY, data.enemy);
+                if(this.laset&&this.laset.getCheckIndex(index)){
+                    this.laset.setEnemyInfo()
+                }
+            }
+            this.enemyList = this.enemyList.filter(item => enemy1 !== item)
+            if (enemy1) {
+                ObjectPoolMgr.instance.put(PoolType.ENEMY, enemy1);
                 this.dieEnemy++;
                 this.updateEnemyLabel();
-                if (this.dieEnemy  == this.enemyMax) {
-                    this.scheduleOnce(()=>{
+                if (this.dieEnemy == this.enemyMax) {
+                    this.scheduleOnce(() => {
                         this.addBitEnemy()
-                    },3);
+                    }, 3);
+
+                    // 添加新的属性 或者 类型
+                    if(!this.laset){
+                        let data = { id: "3001", open: true, state: 0, time: 0, func: "addLaser", obj: null }
+                        this.addShowEffect(data);
+                    }
                 }
             }
         }
+    }
+
+    onUpdate(dt) {
+        if (InsMgr.gameinfo.isPause()) return;
+        for (let i = 0; i < this.showEfect.length; i++) {
+            let item = this.showEfect[i];
+            if (!item.open) continue;
+            if (item.state == 0) {
+                item.time += dt;
+                let skillData = GameData.skill[item.id];
+                let sprite_bar = this.buttletEffect[i].bar as Sprite
+                sprite_bar.node.active = true;
+                sprite_bar.fillRange = 1 - item.time / skillData.time;
+                if (skillData) {
+                    if (skillData.time <= item.time) {
+                        item.state = 1;
+                        item.time = 0;
+                        sprite_bar.fillRange = 1;
+                        sprite_bar.node.active = false;
+                    }
+                }
+            }
+            if (item.open && item.state) {
+                if (typeof this[item.func] == "function") {
+                    this[item.func](item.id, i);
+                }
+            }
+        }
+
     }
     protected onDestroy(): void {
         InsMgr.event.off(HeroEvent.ENEMY);
@@ -306,8 +385,8 @@ export class HeroTestMgr extends Component {
         InsMgr.event.off(HeroEvent.UDPATEPOOL);
         this.buttletMgr.onDestroy();
         this.buttletMgr = null;
-        InsMgr.time.claerTaskTime();        
-        ObjectPoolMgr.instance.clear();
+        InsMgr.time.claerTaskTime();
+        this.unschedule(this.onUpdate);
     }
 }
 

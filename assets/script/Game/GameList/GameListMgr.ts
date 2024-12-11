@@ -11,35 +11,18 @@ export class GameListMgr extends Component {
     scorllNode: Node;
     item: Node;
     scrollListCtrl: ScrollView;
-    titleLabel: Label;
     init(data?) {
         this.scorllNode = this.node.getChildByName("ScrollView");
         this.item = this.node.getChildByName("Item");
-        this.titleLabel = this.node.getChildByName("titleLabel").getComponent(Label);
-        this.titleLabel.string = l10n.t("gamelisttitle");
+        this.node.getChildByName("titleLabel").getComponent(Label).string = l10n.t("gamelisttitle");
         this.scrollListCtrl = this.scorllNode.getComponent(ScrollView)
         this.addData();
-        let tobj=InsMgr.data.getData("ui1")
-        let tdata=InsMgr.data.getUserPropertys(tobj);
-        let temp_data=tdata(["description","key","value"])
-        console.log("tdata:",temp_data);
-
     }
     addData() {
-        let dataArray = [
-            UIID.ChessBoard
-            , UIID.GravityRollerCoaster
-            , UIID.HeroTest
-            , UIID.RedGreenLight
-            , UIID.SelectColor
-            , UIID.Tetris, , , ,, 
-        ];
-        let result = InsMgr.data.getQueryData(item => item.value.name.indexOf("item") != -1)
-      
+        let dataArray = [UIID.ChessBoard, UIID.GravityRollerCoaster, UIID.HeroTest, UIID.RedGreenLight, UIID.SelectColor, UIID.Tetris];
+        let result = InsMgr.data.getQueryData(item => item.key.indexOf("ui") != -1)
         for (let i = 0; i < result.length; i++) {
-            let param = {
-                type: dataArray[i],
-                itemIndex: i,
+            let param = {type: dataArray[i],itemIndex: i,
                 cb: (data, index, spriteFrame) => {
                     this.itemCb(Object.assign(data, { index: index, background: spriteFrame }))
                 }
@@ -58,14 +41,9 @@ export class GameListMgr extends Component {
         return node;
     }
     itemCb(data) {
-        if (!data.type) {
-            console.log("type is null");
-            return;
-        }
-        InsMgr.layer.show(data.type,
-            data,
-            () => {
-                InsMgr.layer.hide(UIID.GameList);
-            })
+        if (!data.type) { return;}
+        InsMgr.layer.show(data.type, data, () => {
+            InsMgr.layer.hide(UIID.GameList);
+        });
     }
 }

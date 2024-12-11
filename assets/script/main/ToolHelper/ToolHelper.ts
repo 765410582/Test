@@ -279,7 +279,7 @@ export class ToolHelper extends Component {
         });
     }
 
-    
+
 
     /**
      * 给节点添加或更新Widget组件，并设置对齐方式
@@ -373,13 +373,13 @@ export class ToolHelper extends Component {
     }
 
 
-/**
- * 合并两个对象的实例属性和原型，创建一个新的对象
- * 此函数旨在合并两个对象的属性和原型，生成一个新的具有合并后特性的对象
- * @param {Object} obj1 - 第一个对象，其属性和原型将被合并
- * @param {Object} obj2 - 第二个对象，其属性和原型将被合并
- * @returns {Object} - 返回一个新的对象，具有合并后 obj1 和 obj2 的实例属性和原型
- */
+    /**
+     * 合并两个对象的实例属性和原型，创建一个新的对象
+     * 此函数旨在合并两个对象的属性和原型，生成一个新的具有合并后特性的对象
+     * @param {Object} obj1 - 第一个对象，其属性和原型将被合并
+     * @param {Object} obj2 - 第二个对象，其属性和原型将被合并
+     * @returns {Object} - 返回一个新的对象，具有合并后 obj1 和 obj2 的实例属性和原型
+     */
     mergeObjectsWithPrototype(obj1, obj2) {
         // 创建一个新对象，其原型是 obj1 和 obj2 原型的合并
         const mergedPrototype = Object.create(Object.prototype);
@@ -397,32 +397,32 @@ export class ToolHelper extends Component {
         return mergedObject;
     }
 
-     getBrowser() {
+    getBrowser() {
         const userAgent = navigator.userAgent;
-      
+
         // 检查 Chrome 浏览器
         if (userAgent.includes("Chrome") && !userAgent.includes("Edge") && !userAgent.includes("OPR")) {
-          return "Chrome";
+            return "Chrome";
         }
-        
+
         // 检查 Firefox 浏览器
         if (userAgent.includes("Firefox")) {
-          return "Firefox";
+            return "Firefox";
         }
-      
+
         // 检查 Safari 浏览器
         if (userAgent.includes("Safari") && !userAgent.includes("Chrome")) {
-          return "Safari";
+            return "Safari";
         }
-      
+
         // 检查 Edge 浏览器
         if (userAgent.includes("Edg")) {
-          return "Edge";
+            return "Edge";
         }
-      
+
         // 其他浏览器
         return "Unknown Browser";
-      }
+    }
 
     //   展开数组层数
     flattenArray(arr, depth = 1) {
@@ -431,16 +431,32 @@ export class ToolHelper extends Component {
         }, []);
     }
 
-    async getDealPool(type:PoolType,data:any){
-        let node=ObjectPoolMgr.instance.get(type)
-        if(!node){
+    async getDealPool(type: PoolType, data: any) {
+        let node = ObjectPoolMgr.instance.get(type)
+        if (!node) {
             let prefab: any = await InsMgr.res.getPrefab(data);
-             node = instantiate(prefab);
+            node = instantiate(prefab);
         }
 
         return node;
     }
-      
+
+    /**
+    * 格式化文件大小，将其转换为更易读的字符串格式
+    * @param bytes 文件大小，以字节为单位
+    * @returns 返回格式化后的文件大小字符串，例如 "123 "、"1.2 K" 等
+    */
+    getformatSize(bytes: number,fixedCount=0,p=1024): string {
+        let values=["","KB","MB","GB","TB","PB","EB","ZB","YB"]
+        for(let i=1;i<values.length;i++){
+            let size=Math.pow(p,i);
+            if(size>bytes){
+                size=Math.pow(p,i-1);
+                return (bytes/size).toFixed(fixedCount)+values[i-1];
+            }
+        }
+    }
+
 }
 
 export class mayThrowError {
