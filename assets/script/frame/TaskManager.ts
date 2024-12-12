@@ -5,7 +5,6 @@ export class Task {
     name: string;
     weight: number;
     runner: Runner;
-
     constructor(name: string, weight: number, runner: Runner) {
         this.name = name;
         this.weight = weight;
@@ -24,11 +23,8 @@ export class TaskManager {
 
     async runSerial(progress: Progressor, thisObj: any) {      
         var weight = 0;   
-        let totalTime = Date.now();
         progress?.call(thisObj, 0);        
         for (let task of this._tasks) {
-            console.log(`begin task ${task.name}`);
-            let dt = Date.now();
             let ret = await task.runner(task, (p) => {
                 let w = weight + task.weight * p;
                 let pp = w / this._totalWeight;
@@ -41,11 +37,8 @@ export class TaskManager {
 
             weight += task.weight;
             let pp = weight / this._totalWeight;
-            progress?.call(thisObj, pp);
-
-            console.log(`task ${task.name} done, cost ${Date.now() - dt}ms`);
+            progress?.call(thisObj, pp);   
         }
-        console.log(`total cost ${Date.now() - totalTime}ms`);
         return true;
     }
 
@@ -53,26 +46,19 @@ export class TaskManager {
         var weight = 0; 
         let tasks = this._tasks.map(task => {
             return new Promise(async (resolve, reject) => {
-                console.log(`begin task ${task.name}`);
-                let dt = Date.now();
                 let ret = await task.runner(task, (p) => {
                     let w = weight + task.weight * p;
                     let pp = w / this._totalWeight;
                     progress?.call(thisObj, pp);
                 });
-                weight += task.weight;
-                console.log(`task ${task.name} done, cost ${Date.now() - dt}ms`);              
+                weight += task.weight;             
                 let pp = weight / this._totalWeight;
                 progress?.call(thisObj, pp);
 
                 resolve(ret);
             });
         });
-
-        let totalTime = Date.now();
         let ret = await Promise.all(tasks);
-        console.log(`total cost ${Date.now() - totalTime}ms`);
-
         if (ret.indexOf(false) >= 0) {
             return false;
         }

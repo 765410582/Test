@@ -2,21 +2,8 @@ import { _decorator, Component, director, instantiate, Node, Prefab, resources, 
 import { LayerType, UIConfigData, UIID } from '../main/ViewConfig';
 import { mayThrowError } from '../main/ToolHelper/ToolHelper';
 import { InsMgr } from './InsMgr';
+import { BaseUI } from './ui/BaseUI';
 const { ccclass, property } = _decorator;
-function logContext(target: any, methodName: string, descriptor: PropertyDescriptor) {
-    const originalMethod = descriptor.value;
-    descriptor.value = function (...args: any[]) {
-        const context = {
-            class: target.constructor.name,
-            method: methodName,
-        };
-        console.log(`方法 ${context.method} 在 ${context.class} 类中被调用`);
-     
-        return originalMethod.apply(this, args);
-    };
-
-    return descriptor;
-}
 
 @ccclass('LayerManager')
 export class LayerManager extends Component {
@@ -47,7 +34,6 @@ export class LayerManager extends Component {
         }
     }
 
-    @logContext
     async show<T extends UIID>(name: T, param = null, cb: Function = null) {
         let layer1 = this.has(name);
         if (layer1) {
@@ -67,12 +53,10 @@ export class LayerManager extends Component {
             this.layerList[name] = node;
             node.parent = this.rootList[layer];
             InsMgr.tool.addWidget(node, { top: 1, bottom: 1, left: 1, right: 1 });
-            let mgr = node.addComponent(uiclass) as any;
-            if (mgr) mgr.init(param)
-            if (typeof cb == 'function') cb();
+            let mgr = node.addComponent(uiclass) as BaseUI;
+            if (mgr) mgr.onInit(param,cb);
             if (layer == LayerType.UI) {
                 this.nextLayer.push(name);
-                console.log("this.nextLayer",this.nextLayer);
             }
         }
     }

@@ -5,6 +5,7 @@ import { UIConfigData, UIID } from '../../main/ViewConfig';
 
 import { l10n } from 'db://localization-editor/l10n'
 import { NetWorkInfo } from '../../TestMain';
+import { BaseUI } from '../../frame/ui/BaseUI';
 const loadData = [
     { path: "prefab", type: Prefab, dec: "预制体", handle: "bundleA" }, 
     { path: "ui", type: SpriteFrame, dec: "精灵贴图", handle: "bundleA" }, 
@@ -14,25 +15,26 @@ const { ccclass, property } = _decorator;
 
 
 @ccclass('LoadingMgr')
-export class LoadingMgr extends Component {
+export class LoadingMgr extends BaseUI {
+    
     private _progress: number;
     private progressBar: ProgressBar;
     private barLabel: Label;
     private index: number = 1;
     totalTime: number;
     startTime: number = performance.now(); // 记录开始时间
-    init(data?) {
-        this.progressBar = this.node.getChildByName("ProgressBar").getComponent(ProgressBar);
-        this.barLabel = this.node.getChildByName("barLabel").getComponent(Label);
+
+    onRegisterUI(): void {
+        this.progressBar = this.getNode("ProgressBar",null,ProgressBar);
+        this.barLabel = this.getNode("barLabel",null,Label);
+    }
+
+    onStart():void{
         InsMgr.layer.show(UIID.NetLoading);
-        
-        
-
         this.loading();
-   }
-   
+    }
+       
     async loading() {
-
         loadData.forEach(async element => {
             console.log();
             await InsMgr.task.add(element.path, 1, async (t, progressCallback) => {
@@ -92,6 +94,10 @@ export class LoadingMgr extends Component {
                 this.index++;
             }
         })
+    }
+
+    unRegister() {
+        
     }
 }
 

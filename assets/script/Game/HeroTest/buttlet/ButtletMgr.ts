@@ -256,7 +256,7 @@ export class ButtletMgr extends Component {
     }
 
     public onDestroy(): void {
-        InsMgr.event.off(HeroEvent.BULLET);
+        InsMgr.event.Clear(this);
         this.unschedule(this.onUpdate);
         for (let i = 0; i < this.bulletList.length; i++) {
             let bullet = this.bulletList[i];

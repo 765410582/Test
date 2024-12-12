@@ -4,22 +4,31 @@ import { LayerManager } from '../../frame/LayerManager';
 import { UIID } from '../../main/ViewConfig';
 import { InsMgr } from '../../frame/InsMgr';
 import { l10n } from 'db://localization-editor/l10n'
+import { BaseUI } from '../../frame/ui/BaseUI';
 const { ccclass, property } = _decorator;
 
 @ccclass('GameListMgr')
-export class GameListMgr extends Component {
+export class GameListMgr extends BaseUI {
+    
     scorllNode: Node;
     item: Node;
     scrollListCtrl: ScrollView;
-    init(data?) {
-        this.scorllNode = this.node.getChildByName("ScrollView");
-        this.item = this.node.getChildByName("Item");
-        this.node.getChildByName("titleLabel").getComponent(Label).string = l10n.t("gamelisttitle");
-        this.scrollListCtrl = this.scorllNode.getComponent(ScrollView)
+  
+
+    onRegisterUI(){
+        this.scorllNode = this.getNode("ScrollView"); 
+        this.item =this.getNode("Item"); 
+        this.getNode("titleLabel",null,Label).string = l10n.t("gamelisttitle");
+        this.scrollListCtrl =this.scorllNode.getComponent(ScrollView)
+      
+    }
+
+    onStart(): void {
         this.addData();
     }
+    
     addData() {
-        let dataArray = [UIID.ChessBoard, UIID.GravityRollerCoaster, UIID.HeroTest, UIID.RedGreenLight, UIID.SelectColor, UIID.Tetris];
+        let dataArray = [UIID.HeroTest];
         let result = InsMgr.data.getQueryData(item => item.key.indexOf("ui") != -1)
         for (let i = 0; i < result.length; i++) {
             let param = {type: dataArray[i],itemIndex: i,
@@ -45,5 +54,8 @@ export class GameListMgr extends Component {
         InsMgr.layer.show(data.type, data, () => {
             InsMgr.layer.hide(UIID.GameList);
         });
+    }
+    unRegister(){
+        
     }
 }
