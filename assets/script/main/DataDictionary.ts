@@ -57,7 +57,12 @@ export class DataDictionary extends Component {
         return this.entries.size;
     }
     print() {
-        console.log("entries", this.entries);
+        console.log("==============打印数据 STRAT=====================");
+        for (const [key, value] of this.entries) {
+            console.log(`${key}: ${ value.description}`);
+        }
+        console.log(this.entries);
+        console.log("==============打印数据 END=====================");
     }
    
     getPrefab(name:string) {

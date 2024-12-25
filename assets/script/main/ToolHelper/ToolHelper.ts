@@ -1,11 +1,10 @@
 import { __private, _decorator, Color, Component, director, EventTouch, gfx, instantiate, Label, Node, Rect, Sprite, SpriteFrame, Texture2D, tween, UITransform, v2, v3, Vec2, Vec3, Widget } from 'cc';
 import { ReNodeData } from '../ConfigData';
-import { EventType } from '../../TestMain';
 import { InsMgr } from '../../frame/InsMgr';
 import { l10n } from 'db://localization-editor/l10n'
 import { ObjectPoolMgr, PoolType } from '../../frame/ObjectPoolMgr';
 const { ccclass, property } = _decorator;
-
+const values = ["", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"]
 @ccclass('ToolHelper')
 export class ToolHelper extends Component {
     /**
@@ -446,30 +445,54 @@ export class ToolHelper extends Component {
     * @param bytes 文件大小，以字节为单位
     * @returns 返回格式化后的文件大小字符串，例如 "123 "、"1.2 K" 等
     */
-    getformatSize(bytes: number,fixedCount=0,p=1024): string {
-        let values=["","KB","MB","GB","TB","PB","EB","ZB","YB"]
-        for(let i=1;i<values.length;i++){
-            let size=Math.pow(p,i);
-            if(size>bytes){
-                size=Math.pow(p,i-1);
-                return (bytes/size).toFixed(fixedCount)+values[i-1];
+    getformatSize(bytes: number, fixedCount = 0, p = 1024): string {
+        let len = values.length
+        for (let i = 1; i < len; i++) {
+            let size = Math.pow(p, i);
+            if (size > bytes) {
+                size = Math.pow(p, i - 1);
+                return (bytes / size).toFixed(fixedCount) + values[i - 1];
             }
         }
     }
+    // 灰度值
+    rgbToBlackAndWhite(color): number {
+        let { r, g, b } = color;
+        // 计算灰度值
+        return Math.round(0.299 * r + 0.587 * g + 0.114 * b);
+    }
+    // 对比度
+    rgbToRelativeLuminance(r: number, g: number, b: number): number {
+        // 将 RGB 值标准化到 [0, 1] 范围
+        r = r / 255;
+        g = g / 255;
+        b = b / 255;
 
-}
+        // 应用线性转化（如果颜色的值小于 0.03928，使用的公式是：x/12.92，否则是：((x+0.055)/1.055)^2.4）
+        const luminance = (c: number) => {
+            return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+        };
 
-export class mayThrowError {
-    name: string;
-    message: any;
-    stack: string;
-    /**
- * 构造函数，用于初始化一个错误对象
- * @param {string} message - 错误信息
- */
-    constructor(message) {
-        this.name = "错误"
-        this.message = message
-        alert("当前功能没有开发");
+        // 计算并返回相对亮度
+        return 0.2126 * luminance(r) + 0.7152 * luminance(g) + 0.0722 * luminance(b);
+    }
+
+
+    getTimeFormat(updatime, split = "YYYY-MM-dd HH:mm:ss") {
+        let date = new Date();
+        if (updatime) date = new Date(updatime * 1000);
+        const year = date.getFullYear().toString();
+        const month = (date.getMonth() + 1).toString()
+        const day = String(date.getDate()).toString()
+        const hours = date.getHours().toString()
+        const minutes = date.getMinutes().toString()
+        const seconds = date.getSeconds().toString()
+        const values = [year, month, day, hours, minutes, seconds]
+        const keys = ["YYYY", "MM", "dd", "HH", "mm", "ss"]
+        let result = split;
+        for (let i = 0; i < keys.length; i++) {
+            result = result.replace(keys[i], values[i])
+        }
+        return result;
     }
 }

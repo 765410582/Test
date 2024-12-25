@@ -1,7 +1,6 @@
 import { _decorator, Color, Component, isValid, Node, size, SpringJoint2D, Sprite, UI, UITransform, v3, Vec2 } from 'cc';
 import { InsMgr } from '../../../frame/InsMgr';
 import { enemy } from '../enemy';
-import { HurtType } from '../hurt';
 const { ccclass, property } = _decorator;
 const width = 12;
 @ccclass('Laser')

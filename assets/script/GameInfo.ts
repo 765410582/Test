@@ -30,11 +30,6 @@ export class GameInfo {
    private gameResult: GameResult = GameResult.None;
    private gameData: GameData = null;
 
-
-   private totalJSHeapSize: any;
-   private usedJSHeapSize: any;
-   private jsHeapSizeLimit: any;
-
    public isPause(): boolean {
       return this.gameStatus == GameStatus.GAME_PAUSE;
    }

@@ -32,8 +32,8 @@ export class hurt extends Component {
         speed = (speed || 1)
         time = (time || 1)
         this.node_lable = this.node.getComponent(Label)
-        let size=InsMgr.tool.getformatSize( hurt);
-        let label_hurt = "-" +size;
+        let size = InsMgr.tool.getformatSize(hurt);
+        let label_hurt = "-" + size;
         let color = Color.WHITE;
         this.node_lable.fontSize = 30
         if (type == HurtType.hurt) {//暴击
@@ -48,16 +48,13 @@ export class hurt extends Component {
         this.node_lable.color = color;
     }
     moveEffect() {
-        let arr = [['up','down'], ['left','right']]
+        let arr = [['up', 'down'], ['left', 'right']]
         let movex = this.moveInDirection(arr[0][Math.floor(Math.random() * arr[0].length)])
         let movey = this.moveInDirection(arr[1][Math.floor(Math.random() * arr[1].length)])
         let targetPos = v3(this.targetNode.x + movex, this.targetNode.y + movey, 0);
-        tween(this.node)
-            .to(this.param.time, { position: targetPos })
-            .call(() => {
-                ObjectPoolMgr.instance.put(PoolType.DAMAGE, this.node)
-            })
-            .start()
+        tween(this.node).to(this.param.time, { position: targetPos }).call(() => {
+            ObjectPoolMgr.instance.put(PoolType.DAMAGE, this.node)
+        }).start()
     }
 
     moveInDirection(direction: string) {
@@ -79,9 +76,4 @@ export class hurt extends Component {
         }
         return targetPos;
     }
-
 }
-
-
-
-

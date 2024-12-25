@@ -1,6 +1,5 @@
-import { _decorator, Component, director, instantiate, Node, Prefab, resources, UITransform, Widget } from 'cc';
+import { _decorator, Component, director, instantiate, Node,  UITransform } from 'cc';
 import { LayerType, UIConfigData, UIID } from '../main/ViewConfig';
-import { mayThrowError } from '../main/ToolHelper/ToolHelper';
 import { InsMgr } from './InsMgr';
 import { BaseUI } from './ui/BaseUI';
 const { ccclass, property } = _decorator;
@@ -54,19 +53,36 @@ export class LayerManager extends Component {
             node.parent = this.rootList[layer];
             InsMgr.tool.addWidget(node, { top: 1, bottom: 1, left: 1, right: 1 });
             let mgr = node.addComponent(uiclass) as BaseUI;
-            if (mgr) mgr.onInit(param,cb);
+            if (mgr) mgr.onInit(param, cb);
             if (layer == LayerType.UI) {
                 this.nextLayer.push(name);
             }
         }
     }
-
+    /**
+     * Checks if a node with the specified name exists.
+     * 
+     * This method checks for the presence of a node in the layerList by the given name.
+     * It uses a generic parameter T to ensure that the provided name is of type UIID,
+     * thus providing type safety at compile time.
+     * 
+     * @param name - The name of the node to check, must be of type UIID.
+     * @returns The node object if found; otherwise, returns undefined.
+     */
 
     has<T extends UIID>(name: T): Node {
         return this.layerList[name];
     }
 
-    hide<T extends UIID>(name: T, cb = null) {
+    /**
+     * Hides the specified UI layer.
+     * 
+     * This method destroys and removes the specified UI layer by name. If the UI layer does not exist, it logs a warning message.
+     * 
+     * @param name The name of the UI layer to hide, used to identify a specific UI layer.
+     * @param cb An optional callback function that is called after the UI layer is destroyed.
+     */
+    hide<T extends UIID>(name: T, cb: Function = null) {
         let layer = this.has(name);
         if (layer) {
             layer.destroy();
@@ -80,18 +96,16 @@ export class LayerManager extends Component {
 
     /**
      * 获取下一个层级中的倒数第二个层级
-     * 
      * 此方法旨在动态访问一个层级数组中的倒数第二个元素
      * 它假设NextLayer数组至少有两个元素
-     * 
-     * @returns {Any} 返回NextLayer数组中的倒数第二个元素
+     * @returns  返回NextLayer数组中的倒数第二个元素
      */
     getPreLayer() {
         let len = this.nextLayer.length
-        if (len < 2) {
-            throw new mayThrowError("NextLayer数组至少有两个元素")
+        if (len >1) {
+            return this.nextLayer[len - 2];
         }
-        return this.nextLayer[len - 2]
+        return null;
     }
 
     getCurLevel() {
@@ -103,6 +117,9 @@ export class LayerManager extends Component {
             }
         }
     }
+
+
+
 }
 
 

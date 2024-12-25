@@ -28,11 +28,11 @@ export class ButtletMgr extends Component {
     IsFourBullet: boolean = false;
     bulletList = [];
     laset: Laser;
-
     ShowLaserTime: number = 5;
     bulletLevel: number = 1;
     bulletCount: number = 0;
     enemyIndex: number = null;
+
     constructor(param?) {
         super();
         this.param = param;
@@ -155,11 +155,6 @@ export class ButtletMgr extends Component {
         temp.init(data);
         this.bulletList.push(node);
     }
-
-
-
-
-
     //  处理子弹
     bulletRemove(event, data) {
         let { node, type, result } = data;
@@ -208,9 +203,8 @@ export class ButtletMgr extends Component {
             this.addBullet(curdata);
         }
     }
-
     // 次级子弹发射
-    public addSecondBullet(data) {
+    addSecondBullet(data) {
         let { pos, order } = data;
         if (!pos) return;
         let start = v3(pos.x, pos.y + 50, 0)
@@ -227,9 +221,8 @@ export class ButtletMgr extends Component {
             this.addBullet(curdata);
         }
     }
-
     // 墙壁反射
-    public addWallReflect(data) {
+    addWallReflect(data) {
         let { pos, order, angle } = data;
         let start = v3(pos.x, pos.y + 50, 0)
         let curAngle = 180 - angle;
@@ -242,20 +235,16 @@ export class ButtletMgr extends Component {
         }
         this.addBullet(curdata);
     }
-
-
     setEnemyInfo(index:number=null){
         this.enemyIndex =index;
     }
-
     getCheckIndex(enemyindex: number) {
         if(enemyindex==this.enemyIndex){
             return true;
         }
         return false;
     }
-
-    public onDestroy(): void {
+    onDestroy() {
         InsMgr.event.Clear(this);
         this.unschedule(this.onUpdate);
         for (let i = 0; i < this.bulletList.length; i++) {

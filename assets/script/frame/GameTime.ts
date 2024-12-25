@@ -34,9 +34,9 @@ export class GameTime extends Component {
         this.time+=dt;
     }
 
-    setTaskTime(key:TimeType,data:ITimeData){
-        data.time=data.time+this.time;
-        this._task_time.push(data)
+    setTaskTime(key:TimeType,value:ITimeData){
+        value.time=value.time+this.time;
+        this._task_time.push(value)
     }
 
 

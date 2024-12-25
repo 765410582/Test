@@ -12,8 +12,6 @@ const loadData = [
     { path: "tex", type: Texture2D, dec: "图片原始数据", handle: "bundleA" }
 ];
 const { ccclass, property } = _decorator;
-
-
 @ccclass('LoadingMgr')
 export class LoadingMgr extends BaseUI {
     
@@ -36,7 +34,6 @@ export class LoadingMgr extends BaseUI {
        
     async loading() {
         loadData.forEach(async element => {
-            console.log();
             await InsMgr.task.add(element.path, 1, async (t, progressCallback) => {
                 return await new Promise(resolve => {
                     this.loadBundleData(element, progressCallback, resolve);

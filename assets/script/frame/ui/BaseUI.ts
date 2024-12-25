@@ -1,4 +1,4 @@
-import { _decorator, Component, Node, Size, UITransform, Vec3 } from 'cc';
+import { _decorator, Component, Size, UITransform, Vec3 } from 'cc';
 import { InsMgr } from '../InsMgr';
 const { ccclass, property } = _decorator;
 
@@ -20,13 +20,9 @@ export abstract  class BaseUI extends Component {
         this.onRegisterPreInfo();
         this.onRegisterEvent();
         this.onRegisterUI();
-      
-       
     }
-
     /**
      * Get a node or is component by path.
-     * 
      * This method searches for the node in the current node and its children.
      * If the node is not found, an error will be displayed.
      * @param path The path of the node or component to be obtained
@@ -72,13 +68,8 @@ export abstract  class BaseUI extends Component {
         this.size = this.node.getComponent(UITransform).contentSize;
         this.pos = this.node.position;
     }
-    onRegisterEvent() {
-        
-    }
-    
+    onRegisterEvent() {}
     onRegisterUI(){}
-  
-   
 
     //============================================PRIVATE=============================================================
     /**

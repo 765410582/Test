@@ -10,10 +10,10 @@ export enum BulletState {
 }
 @ccclass('buttlet')
 export class buttlet extends Component {
-    private param: any;
-    private position: Vec3;
-    private speed: Vec2 = v2(30, 30);
-    private direction: Vec2;
+    protected param: any;
+    protected position: Vec3;
+    protected speed: Vec2 = v2(30, 30);
+    protected direction: Vec2;
     baseApk: number = 50;
     Apk: number = 50000;
     isStop: boolean = false;
@@ -46,13 +46,6 @@ export class buttlet extends Component {
         this.outOrder();
     }
 
-
-    updatePos(dt) {
-        this.position = v3(this.position.x + this.direction.x * this.speed.x * dt * this.param.popupSpeed,
-            this.position.y + this.direction.y * this.speed.y * dt * this.param.popupSpeed);
-        this.node.position = this.position;
-    }
-
     // 超出边界
     outOrder() {
         if (this.node.position.x <= -this.param.order.width / 2 ||
@@ -66,7 +59,7 @@ export class buttlet extends Component {
 
 
     // 子弹需要清除
-    public clearBullet(position = null) {
+    clearBullet(position = null) {
         this.unschedule(this.onUpdate);
         let data = Object.assign({ pos: position, result: this.state }, this.param);
         InsMgr.event.emit(HeroEvent.BULLET, data);
@@ -80,7 +73,7 @@ export class buttlet extends Component {
         return { Apk: this.Apk, AttAPk: tempApk, Show: show }
     }
 
-    protected onDestroy(): void {
+    onDestroy(): void {
         if (this.rigidbody)
             this.rigidbody.sleep();
         this.unschedule(this.onUpdate);

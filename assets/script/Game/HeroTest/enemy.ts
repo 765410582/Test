@@ -4,7 +4,7 @@ import { _decorator, BoxCollider2D, Collider2D, Color, Component, Contact2DType,
 import { InsMgr } from '../../frame/InsMgr';
 import { HeroEvent } from './HeroTestMgr';
 import { buttlet } from './buttlet/buttlet';
-import { hurt, HurtType } from './hurt';
+import {  HurtType } from './hurt';
 const { ccclass, property } = _decorator;
 @ccclass('enemy')
 export class enemy extends Component {

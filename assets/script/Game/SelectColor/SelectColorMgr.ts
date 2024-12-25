@@ -1,8 +1,10 @@
-import { _decorator, assetManager, Color, Component, EventTouch, instantiate, Label, Layers, Layout, Node, ProgressBar, ScrollView, size, Size, Slider, Sprite, SpriteFrame, sys, Texture2D, UIOpacity, UITransform, v2, v3, Vec3 } from 'cc';
+import { _decorator, assetManager, Color, Component, EventTouch, Graphics, instantiate, Label, Layers, Layout, Node, ProgressBar, ScrollView, size, Size, Slider, Sprite, SpriteFrame, sys, Texture2D, UIOpacity, UITransform, v2, v3, Vec3 } from 'cc';
 import { EventMgr } from '../../frame/EventMgr';
 
 import { UIConfigData, UIID } from '../../main/ViewConfig';
 import { InsMgr } from '../../frame/InsMgr';
+import { BaseUI } from '../../frame/ui/BaseUI';
+import { Graphics_Write } from './Graphics_Write';
 
 const { ccclass, property } = _decorator;
 let FIX_ITEM_WIDTH = 33;
@@ -15,8 +17,7 @@ export enum SaveStatus {
     FINISH = 1// 1:已完成 
 }
 @ccclass('SelectColorMgr')
-export class SelectColorMgr extends Component {
-    contentSize: Size = null;
+export class SelectColorMgr extends BaseUI {
     alone: number = 0;
     colors = [];
     targetColors = [];
@@ -24,13 +25,13 @@ export class SelectColorMgr extends Component {
     baseColorMap = new Map();
     colorLabel = [];
     colorDataLabel = [];
-    sf: Sprite = null;
+    target: Sprite = null;
     selectIndex: number = 0;
     countLabel: Label = null;
     count: number = 0;
     colorsNode: Node;
     selctBox: Node;
-    data: any;
+    objdata: any;
     textures = []
     scaleNum: number = 1;
     slider: Slider;
@@ -39,38 +40,27 @@ export class SelectColorMgr extends Component {
     startPositon: Vec3 = null;
     fixPosition: Vec3 = null;
     nIntervId = null;
-    param=null;
-    init(param) {
-        this.param=param;
-        FIX_ITEM_WIDTH = 7;
-        FIX_ITEM_HEIGHT = 8;
-        this.data = {spriteItem:null,index:0};
-        let handle = assetManager.getBundle(param.handle);
-        handle.loadDir("ui", SpriteFrame, (err, spriteFrame) => {
-            if (err) {
-                console.error("err", err);
-                return;
-            }
-            let map= []
-            for (let i = 0; i < spriteFrame.length; i++) {
-                let item = spriteFrame[i];
-                map.push(item);
-            }
-            let index=Math.floor(Math.random()*map.length);
+    contentSize: Readonly<Size>;
+    tempColorList: any[];
 
-            let test=this.node.getChildByName("test").getComponent(Sprite)
-            test.spriteFrame=map[index];
-            this.data.spriteItem=map[index];
-            this.data.index=index;
-            this.initColorData();
-            this.addColors()
-            // this.updateColor();
-            // this.updateShowColors();
-            // this.loadLabelData();
-        })
-
-
+    graphics_Write: Graphics_Write = null;
+    writeCount:number=0;
+    onStart() {
+        
+        FIX_ITEM_WIDTH =16;
+        FIX_ITEM_HEIGHT = 16;
+        this.objdata = { spriteItem: null, index: 0 };
+        let { value } = InsMgr.data.getData("ui1");
+        let test = this.getNode("test", this.node, Sprite)
+        test.spriteFrame = value;
+        this.objdata.spriteItem = test.spriteFrame;
+        this.initColorData();
+        this.addColors()
+        this.updateColor();
+        this.updateShowColors();
+        this.loadLabelData();
     }
+
 
     /**
      * 初始化颜色数据模块。
@@ -79,47 +69,50 @@ export class SelectColorMgr extends Component {
      * 并监听触摸事件以处理颜色选择交互。
      */
     initColorData() {
-        this.colorsNode = this.node.getChildByName("colors");
-        this.selctBox = this.colorsNode.getComponent(ScrollView).content.getChildByName("select");
+        this.colorsNode = this.getNode("colors")
+        this.selctBox = this.getNode("select", this.colorsNode.getComponent(ScrollView).content);
         this.selctBox.getComponent(UITransform).priority = 1;
-        this.countLabel = this.colorsNode.getChildByName("countLabel").getComponent(Label);
-        this.sf = this.node.getChildByName("Sprite").getComponent(Sprite);
-        this.slider = this.node.getChildByName("Slider").getComponent(Slider);
-        this.sliderLabel = this.slider.node.getChildByName("Label").getComponent(Label);
-        this.root = this.node.getChildByPath("Sprite/root");
+        this.countLabel = this.getNode("countLabel", this.colorsNode, Label);
+        this.target = this.getNode("target", this.node, Sprite);
+        this.slider = this.getNode("Slider", this.node, Slider);
+        this.sliderLabel = this.getNode("Label", this.slider.node, Label);
+        this.root = this.getNode("target/root");
         // 像素块颜色设置
-        let transform = this.sf.node.getComponent(UITransform)
-        this.contentSize = transform.contentSize
+        this.contentSize = this.target.node.getComponent(UITransform).contentSize;
         this.alone = this.contentSize.width / FIX_ITEM_WIDTH;
 
-        let worldPos = this.sf.node.getWorldPosition();
+
+        let worldPos = this.target.node.getWorldPosition();
         let zeroPos = v3(worldPos.x - this.contentSize.width / 2, worldPos.y - this.contentSize.height / 2, worldPos.z);
         let maxPos = v3(worldPos.x + this.contentSize.width / 2, worldPos.y + this.contentSize.height / 2, worldPos.z);
 
         this.fixPosition = worldPos;
-        this.sf.node.on(Node.EventType.TOUCH_START, (event: EventTouch) => {
+        this.target.node.on(Node.EventType.TOUCH_START, (event: EventTouch) => {
             let uiLocation = event.getUILocation();
-            worldPos = this.sf.node.getWorldPosition();
+            worldPos = this.target.node.getWorldPosition();
             this.startPositon = v3(uiLocation.x, uiLocation.y, 0)
             zeroPos = v3(worldPos.x - this.contentSize.width / 2 * this.scaleNum, worldPos.y - this.contentSize.height / 2 * this.scaleNum, worldPos.z);
             maxPos = v3(worldPos.x + this.contentSize.width / 2 * this.scaleNum, worldPos.y + this.contentSize.height / 2 * this.scaleNum, worldPos.z);
             this.clickColor(event, zeroPos, maxPos);
         }, this);
-        this.sf.node.on(Node.EventType.TOUCH_MOVE, (event) => {
-            worldPos = this.sf.node.getWorldPosition();
+        this.target.node.on(Node.EventType.TOUCH_MOVE, (event) => {
+            worldPos = this.target.node.getWorldPosition();
             zeroPos = v3(worldPos.x - this.contentSize.width / 2 * this.scaleNum, worldPos.y - this.contentSize.height / 2 * this.scaleNum, worldPos.z);
             maxPos = v3(worldPos.x + this.contentSize.width / 2 * this.scaleNum, worldPos.y + this.contentSize.height / 2 * this.scaleNum, worldPos.z);
             this.clickColor(event, zeroPos, maxPos);
         }, this);
 
-
-        InsMgr.tool.reBtnCall(this.node.getChildByName("reBtn"), () => {
+        InsMgr.tool.reBtnCall(this.getNode("reBtn"), () => {
             this.saveData()
-            if (this.sf) {
-                this.sf.node.destroy();
+            if (this.target) {
+                this.target.node.destroy();
             }
         });
         this.slider!.node.on('slide', this.callback, this);
+
+        this.getNode("btn_auto").on('click', () => {
+            this.autoStroke();
+        })
     }
 
     /**
@@ -131,8 +124,8 @@ export class SelectColorMgr extends Component {
   *
   * @internal
   */
-    clickColor(
-        event, zeroPos, maxPos) {
+    clickColor(event, zeroPos, maxPos) {
+        if (this.count <= 0) return;
         let uiLocation = event.getUILocation();
         if (uiLocation.x >= zeroPos.x && uiLocation.y >= zeroPos.y && uiLocation.x <= maxPos.x && uiLocation.y <= maxPos.y) {
             let x = Math.floor((uiLocation.x - zeroPos.x) / (this.alone * this.scaleNum));
@@ -149,7 +142,7 @@ export class SelectColorMgr extends Component {
             if (selectColor._val == confrim._val) {
                 if (this.targetColors[x_1][y_1]._val != confrim._val) {
                     this.count--
-                    this.countLabel.string = this.count.toString();
+                    this.countLabel.string = `当前选项个数${this.writeCount}\r\n`+`剩余个数：${this.count}`;
                     this.targetColors[x_1][y_1] = confrim;
                     if (this.colorLabel[x_1][y_1]) {
                         this.colorLabel[x_1][y_1].destroy();
@@ -161,13 +154,15 @@ export class SelectColorMgr extends Component {
                         this.colorLabel[x_1][y_1].destroy();
                         this.colorLabel[x_1][y_1] = null;
                         this.count--
-                        this.countLabel.string = this.count.toString();
+                        this.countLabel.string = `当前选项个数${this.writeCount}\r\n`+`剩余个数：${this.count}`;
                     }
                 }
+                this.writeBox();
             } else {
                 console.error("请选择正确的颜色");
             }
         }
+        this.saveData()
     }
     /**
     * 更新颜色信息。
@@ -176,7 +171,7 @@ export class SelectColorMgr extends Component {
     */
     updateColor() {
         const data = this.getPixelData();
-        InsMgr.tool.pixelsToSprite(this.sf, data);
+        InsMgr.tool.pixelsToSprite(this.target, data);
     }
 
 
@@ -187,12 +182,16 @@ export class SelectColorMgr extends Component {
      */
     addColors() {
         // 读取数据/本地/服务器
-        let { state, value } = this.getData();
+        let color_data = InsMgr.data.getData("selectColor");
+        let { state, value } = { state: SaveStatus.UNFINISH, value: null };
+        // if (color_data) {
+        //     [state, value] = [color_data.state, color_data.value];
+        // }
         this.colors = [];
         this.targetColors = [];
         this.colorLabel = [];
 
-        let [pixels, baseColor, baseColorMap] = InsMgr.tool.getLoadPixels(this.data.spriteItem, FIX_ITEM_WIDTH, FIX_ITEM_HEIGHT);
+        let [pixels, baseColor, baseColorMap] = InsMgr.tool.getLoadPixels(this.objdata.spriteItem, FIX_ITEM_WIDTH, FIX_ITEM_HEIGHT);
         [this.baseColor, this.baseColorMap] = [baseColor, baseColorMap];
         let minx = Math.floor((FIX_ITEM_WIDTH - pixels.length) / 2)
         let miny = Math.floor((FIX_ITEM_HEIGHT - pixels[0].length) / 2)
@@ -217,7 +216,7 @@ export class SelectColorMgr extends Component {
                     index = 0;
                 }
                 this.colors[t][t1] = color;
-                let gray = (color.r + color.g + color.b) / 3
+                let gray = InsMgr.tool.rgbToBlackAndWhite(color);
                 let color2 = new Color(gray, gray, gray, 255);
                 let obj = null;
                 if (state === SaveStatus.FINISH || state !== SaveStatus.DEFALUT && value && value[t][t1]) {
@@ -242,8 +241,9 @@ export class SelectColorMgr extends Component {
             }
         }
         this.count = FIX_ITEM_HEIGHT * FIX_ITEM_HEIGHT - finishCount;
-        this.countLabel.string = this.count.toString();
+        this.countLabel.string = `当前选项个数${this.writeCount}\r\n`+`剩余个数：${this.count}`;
     }
+
 
     /**
         * 获取像素数据。
@@ -255,13 +255,12 @@ export class SelectColorMgr extends Component {
         */
     getPixelData(): any {
         let width = this.contentSize.width, height = this.contentSize.height;
-        const data = new Uint8Array(width * height * (FIX_ITEM_WIDTH * FIX_ITEM_HEIGHT));    // rgba
+        const data = new Uint8Array(width * height * 4);    // rgba
         for (let n = 0, i = 0; n < width; n++) {
             for (let m = 0; m < height; m++, i += 4) {
                 let centerN = Math.floor(n / this.alone);
                 let centerM = Math.floor(m / this.alone);
                 let color = this.targetColors[centerN][centerM];
-
                 data[i] = color.r;
                 data[i + 1] = color.g;
                 data[i + 2] = color.b;
@@ -282,7 +281,7 @@ export class SelectColorMgr extends Component {
  * @returns 返回创建并配置好的新节点。
  */
     getItemLabel(position, value) {
-        let itemLabel = this.node.getChildByName("itemLabel")
+        let itemLabel = this.getNode("itemLabel");
         let node = instantiate(itemLabel)
         node.parent = this.root;
         node.position = v3(position.x * this.alone, position.y * this.alone, 0)
@@ -297,35 +296,54 @@ export class SelectColorMgr extends Component {
      * 同时，设置选择框的位置，并为每个颜色项添加点击事件，以更新选择框的位置和选择索引。
      */
     updateShowColors() {
-        let item = this.node.getChildByName("item");
+
+        this.graphics_Write = this.getNode("target/graphics_write", this.node, Graphics_Write);
+        let item = this.getNode("item");
         let scrollView = this.colorsNode.getComponent(ScrollView)
         let len = this.baseColor.length;
+        console.log("颜色类型个数:", len)
+        this.tempColorList = []
         for (let i = 0; i < len; i++) {
             let color = this.baseColor[i];
             let node = instantiate(item);
             node.parent = scrollView.content;
             let pos = v3(50 + i * 100, 0, 0);
             node.position = pos;
-            if (i === 0) {
-                this.selctBox.position = pos;
-            }
+            if (i === 0) this.selctBox.position = pos;
             let sprite = node.getComponent(Sprite);
             sprite.color = color
-            let label = node.getChildByName("Label").getComponent(Label);
-            label.string = (this.baseColorMap.get(color._val) + 1).toString();
+            let label = this.getNode("Label", node, Label);
+            label.string = (i + 1).toString();
+            label.color = this.getContrastRatio(color);
             sprite.node["tag"] = i;
             node.on('click', (btn) => {
                 let tnode = btn.node as Node;
                 this.selectIndex = tnode["tag"];
                 this.selctBox.position = tnode.position;
+                this.writeBox();
             }, this)
+
+            this.tempColorList.push(node);
         }
         let tansform = scrollView.content.getComponent(UITransform)
         let itemTansform = item.getComponent(UITransform);
         tansform.contentSize = size(itemTansform.contentSize.width * len, itemTansform.contentSize.height)
+       
     }
 
+    writeBox() {
+        let list = this.getCurrentColor(this.selectIndex);
+        this.writeCount=list.length;
+        this.graphics_Write.initData(list, this.alone, this.contentSize,this.colors);
+        this.countLabel.string = `当前选项个数${this.writeCount}\r\n`+`剩余个数：${this.count}`;
+    }
 
+    getContrastRatio(backgroundRgb) {
+        // 计算背景色的相对亮度
+        const contrastWhite = InsMgr.tool.rgbToRelativeLuminance(backgroundRgb.r, backgroundRgb.g, backgroundRgb.b);
+        // 返回对比度较大的颜色
+        return 0.5 < contrastWhite ? { r: 0, g: 0, b: 0, a: 255 } : { r: 255, g: 255, b: 255, a: 255 };
+    }
     /**
      * 更新图片的缩放比例
      * 
@@ -344,7 +362,7 @@ export class SelectColorMgr extends Component {
         if (this.scaleNum >= maxScale) {
             this.scaleNum = maxScale;
         }
-        this.sf.node.setScale(v3(this.scaleNum, this.scaleNum, 1));
+        this.target.node.setScale(v3(this.scaleNum, this.scaleNum, 1));
     }
 
     callback(slider: Slider) {
@@ -356,13 +374,13 @@ export class SelectColorMgr extends Component {
             this.startPositon = this.fixPosition
         }
         let value = v3((this.fixPosition.x - this.startPositon.x) * progress, (this.fixPosition.y - this.startPositon.y) * progress, 0);
-        this.sf.node.position = value;
+        this.target.node.position = value;
         opacity.opacity = parseInt((progress * 255).toFixed(0));
     }
 
     saveData() {
         let tempValue = [];
-        let levelKey = 'level' + this.data.index;
+        let levelKey = 'selectColor';
         let isfinish = SaveStatus.UNFINISH
         if (this.count == 0) {
             isfinish = SaveStatus.FINISH;
@@ -386,32 +404,23 @@ export class SelectColorMgr extends Component {
             state: isfinish//-1未开始 0:未完成 1:已完成  
         }
         let value = JSON.stringify(levelData);
-        sys.localStorage.setItem(levelKey, value);
+        InsMgr.data.setData(levelKey, value)
     }
-
-    getData() {
-        let levelKey = 'level' + this.data.index
-        let levelData = sys.localStorage.getItem(levelKey);
-        if (levelData) {
-            let { state, value } = JSON.parse(levelData);
-            return { state: state, value: value };
-        } else {
-            console.log(`${levelKey} is not exist`);
-            return { state: SaveStatus.UNFINISH, value: null };
-        }
-    }
-
 
     loadLabelData() {
-        let tempNode = this.node.getChildByName("ProgressBar");
+        let tempNode = this.getNode("ProgressBar");
         let progressBar = tempNode.getComponent(ProgressBar);
         let tempIndex = 0;
         this.nIntervId = setInterval(() => {
-            for (let i = 0; i < 10; i++) {
+            for (let i = 0; i < 100; i++) {
                 tempIndex = this.loadData(tempNode, progressBar, tempIndex);
-                if (!tempIndex) break;
+                if (!tempIndex) 
+                {
+                    this.writeBox();
+                    break;
+                }
             }
-        }, 1)
+        }, 100)
     }
 
 
@@ -433,7 +442,70 @@ export class SelectColorMgr extends Component {
         return tempIndex;
     }
 
-    protected onDestroy(): void {
+    autoStroke() {
+        let lenx = FIX_ITEM_WIDTH, leny = FIX_ITEM_HEIGHT;
+        let selectColor = this.baseColor[this.selectIndex];
+        let temp_array = []
+        for (let i = 0; i < lenx; i++) {
+            for (let j = 0; j < leny; j++) {
+                let confrim = this.colors[i][j];
+                if (selectColor._val == confrim._val) {
+                    temp_array.push({ color: confrim, i: i, j: j });
+                }
+            }
+        }
+        let index = 0;
+        let tempId = setInterval(() => {
+            if (index >= temp_array.length) {
+                clearInterval(tempId);
+                this.selectIndex++;
+                if (this.selectIndex < this.tempColorList.length) {
+                    let tnode = this.tempColorList[this.selectIndex]
+                    this.selctBox.position = tnode.position;
+                    this.autoStroke();
+                } 
+                this.graphics_Write.clear(); 
+                return;
+            }
+            let { color, i, j } = temp_array[index++];
+            if (this.targetColors[i][j]._val != color._val) {
+                this.count--
+                this.writeBox();
+                this.targetColors[i][j] = color;
+                if (this.colorLabel[i][j]) {
+                    this.colorLabel[i][j].destroy();
+                    this.colorLabel[i][j] = null;
+                }
+                this.updateColor();
+            } else {
+                if (this.colorLabel[i][j]) {
+                    this.colorLabel[i][j].destroy();
+                    this.colorLabel[i][j] = null;
+                    this.count--
+                    this.writeBox();
+                
+                }
+            }
+        }, 5)
+    }
+
+    getCurrentColor(index) {
+        let lenx = FIX_ITEM_WIDTH, leny = FIX_ITEM_HEIGHT;
+        
+        let selectColor = this.baseColor[index];
+        let temp_array = []
+        for (let i = 0; i < lenx; i++) {
+            for (let j = 0; j < leny; j++) {
+                let confrim = this.colors[i][j];
+                if (selectColor._val == confrim._val && this.colorLabel[i][j]) {
+                    temp_array.push({ color: confrim, x: j, y: leny - i - 1 });
+                }
+            }
+        }
+        return temp_array;
+    }
+
+    unRegister() {
         if (this.nIntervId) {
             clearInterval(this.nIntervId);
             this.nIntervId = null;

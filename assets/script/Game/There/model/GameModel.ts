@@ -4,7 +4,7 @@ import { ChessFlag, ChessStatus, ChessType, GridHeight, GridWidth } from '../Con
 import { isPointOutOfGrid } from '../ChessBoardMgr';
 import { InsMgr } from '../../../frame/InsMgr';
 import { CellModel, Model } from './CellModel';
-import { mayThrowError } from '../../../main/ToolHelper/ToolHelper';
+
 
 const { ccclass, property } = _decorator;
 
@@ -46,10 +46,7 @@ export class GameModel {
       }
    }
    readModel(tmodel, i, j, data) {
-      /**
-       * 根据规则读取数据
-       */
-      throw new mayThrowError("readModel");
+  
    }
    randomModel(modelData, i, j, chessIds) {
       let falg = true

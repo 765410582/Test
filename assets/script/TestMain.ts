@@ -38,10 +38,13 @@ export class TestMain extends Component {
       StartGame.active=false;
       InsMgr.layer.show(UIID.Loading);
     })
+
+    let result=InsMgr.tool.getTimeFormat(0,"HH:mm:ss YYYY-MM-dd ");
+    console.log("result: ",result);
   }
 
   // 确认结束游戏
-  GameEnd(event, data: GameData, status = true) {
+  GameEnd(event, data: GameData, status = false) {
     if (!data) return;
     let { page, suc, fail, param } = data;
     if (status) {

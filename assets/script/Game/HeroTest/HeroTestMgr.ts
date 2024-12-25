@@ -6,7 +6,7 @@ import { hero } from './hero';
 import { InsMgr } from '../../frame/InsMgr';
 import { TimeType } from '../../frame/GameTime';
 import { ButtletMgr } from './buttlet/ButtletMgr';
-import { hurt, HurtType } from './hurt';
+import { hurt } from './hurt';
 import { ObjectPoolMgr, PoolType } from '../../frame/ObjectPoolMgr';
 import { Laser } from './att/Laser';
 import { BaseUI } from '../../frame/ui/BaseUI';
@@ -83,11 +83,6 @@ export enum HeroEvent {
     HURT = "HURT",
     UDPATEPOOL = "UDPATEPOOL"
 }
-
-
-
-
-
 @ccclass('HeroTestMgr')
 export class HeroTestMgr extends BaseUI {
     
@@ -112,7 +107,6 @@ export class HeroTestMgr extends BaseUI {
         });
         this.getNode("sot/Label", null, Label).string = `x${this.popupSpeed}`
         this.getNode("sot").active = this.popupSpeed <= 1 ? false : true;
-
         let children = this.getNode("layoutlist").children;
         for (let i = 0; i < children.length; i++) {
             let child = children[i]
@@ -269,7 +263,6 @@ export class HeroTestMgr extends BaseUI {
         node.getComponent(UITransform).priority = 1;
 
         this.showEfect[index].obj = this.laset;
-
     }
 
 
@@ -285,9 +278,6 @@ export class HeroTestMgr extends BaseUI {
         if (InsMgr.gameinfo.isPause()) return;
         this.addEnemy();
     }
-
-
-
     heroEnd(event, data) {
         if (InsMgr.gameinfo.isPause()) return;
         InsMgr.gameinfo.pauseGame();

@@ -11,6 +11,7 @@ import { EventMgr } from '../../frame/EventMgr';
 import { LayerManager } from '../../frame/LayerManager';
 import { UIID } from '../../main/ViewConfig';
 import { InsMgr } from '../../frame/InsMgr';
+import { BaseUI } from '../../frame/ui/BaseUI';
 
 /**
  * 1.字的意思 √
@@ -28,7 +29,7 @@ import { InsMgr } from '../../frame/InsMgr';
 const { ccclass, property } = _decorator;
 
 @ccclass('GravityRollerCoasterMgr')
-export class GravityRollerCoasterMgr extends Component {
+export class GravityRollerCoasterMgr extends BaseUI {
   private ctx: Graphics;
   private wirte: Graphics;
   private _gridRender: Graphics;
@@ -49,7 +50,9 @@ export class GravityRollerCoasterMgr extends Component {
   _frameRender: Graphics;
   wenData: any = null;
   retryMedian:boolean=false;
-  init(data?) {
+
+  
+  onStart() {
     InsMgr.tool.reBtnCall(this.node.getChildByName("reBtn"));
     this.ctx = this.node.getChildByName("graphics").getComponent(Graphics);
     this.wirte = this.node.getChildByName("graphicsWrite").getComponent(Graphics);
@@ -123,9 +126,9 @@ export class GravityRollerCoasterMgr extends Component {
     this.initSvgData();
     this.drawGrid();
     this.drawFrame();
-
   }
-
+  unRegister() {
+  }
   initSvgData() {
     this.offset = null;
     this.configuration = {
