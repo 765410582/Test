@@ -23,9 +23,9 @@ export class ButtletMgr extends Component {
     combo: number = 3;// 连击
     volley: number = 3;  //  齐射
     fireTime: number = 0.2;// 发射子弹时间
-    IsSecondBullet: boolean = false;//次级子弹
-    IsWallReflect: boolean = false;
-    IsFourBullet: boolean = false;
+    IsSecondBullet: boolean = true;//次级子弹
+    IsWallReflect: boolean = true;
+    IsFourBullet: boolean = true;
     bulletList = [];
     laset: Laser;
     ShowLaserTime: number = 5;

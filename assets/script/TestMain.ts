@@ -6,7 +6,8 @@ import { TempTest } from './main/ToolHelper/TempTest';
 export const EventType = {
   GameEnd: "GameEnd",
   MessageInfo: "MessageInfo",
-  UpdateTime: "UpdateTime"
+  UpdateTime: "UpdateTime",
+  TetrisMgr:"TetrisMgr"
 }
 
 interface GameData {

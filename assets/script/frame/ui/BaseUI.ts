@@ -18,8 +18,9 @@ export abstract  class BaseUI extends Component {
     event:Array<string>=[];
     protected onLoad(): void {
         this.onRegisterPreInfo();
-        this.onRegisterEvent();
         this.onRegisterUI();
+        this.onRegisterEvent();
+        
     }
     /**
      * Get a node or is component by path.
@@ -70,6 +71,7 @@ export abstract  class BaseUI extends Component {
     }
     onRegisterEvent() {}
     onRegisterUI(){}
+    onRegisterTouch(){}
 
     //============================================PRIVATE=============================================================
     /**

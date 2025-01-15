@@ -1,0 +1,2 @@
+python ./excelTransTs.py
+pause

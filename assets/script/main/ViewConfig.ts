@@ -29,6 +29,7 @@ export enum UIID{
     NetLoading,
     Tetris,
     GamePopup,
+    ColorList
 }
 export var UIConfigData={
     // resources
@@ -44,6 +45,8 @@ export var UIConfigData={
     [UIID.PanelPopup]:{layer: LayerType.PopUp, prefab: "prefab/PanelPopup",uiclass: "PanelPopupMgr",handle:"bundleA"},
     [UIID.Tetris]:{layer: LayerType.UI, prefab: "prefab/Tetris",uiclass: "TetrisMgr",handle:"bundleA"},
     [UIID.GamePopup]:{layer: LayerType.PopUp, prefab: "prefab/GamePopup",uiclass: "GamePopupMgr",handle:"bundleA"},
+    [UIID.ColorList]:{layer: LayerType.UI, prefab: "prefab/ColorList",uiclass: "ColorListMgr",handle:"bundleA"},
+    
     
     
 }

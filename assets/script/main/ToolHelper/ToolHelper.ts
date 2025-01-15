@@ -165,7 +165,7 @@ export class ToolHelper extends Component {
         const baseColor = [];
         const baseColorMap = new Map();
         let i = 0
-        const gray = Color.GRAY;
+        const gray = Color.TRANSPARENT;
         const map = new Map([[gray._val, gray]]);
         for (let n = 0; n < maxx; n++) {
             colorList[n] = []

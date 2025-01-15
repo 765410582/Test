@@ -7,15 +7,15 @@ import { BaseUI } from '../../frame/ui/BaseUI';
 import { Graphics_Write } from './Graphics_Write';
 
 const { ccclass, property } = _decorator;
-let FIX_ITEM_WIDTH = 33;
-let FIX_ITEM_HEIGHT = 33;
-
-
 export enum SaveStatus {
     DEFALUT = -1,//-1未开始 
     UNFINISH = 0,//0:未完成
     FINISH = 1// 1:已完成 
 }
+// const Index=0
+// const SIZE=[v2(15,15),v2(15,15)]
+export let FIX_ITEM_WIDTH =15;
+export let FIX_ITEM_HEIGHT =15;
 @ccclass('SelectColorMgr')
 export class SelectColorMgr extends BaseUI {
     alone: number = 0;
@@ -46,11 +46,12 @@ export class SelectColorMgr extends BaseUI {
     graphics_Write: Graphics_Write = null;
     writeCount:number=0;
     onStart() {
-        
-        FIX_ITEM_WIDTH =16;
-        FIX_ITEM_HEIGHT = 16;
+       
         this.objdata = { spriteItem: null, index: 0 };
-        let { value } = InsMgr.data.getData("ui1");
+        let {index,size,Des}=this.data;
+        FIX_ITEM_WIDTH =size.x;
+        FIX_ITEM_HEIGHT =size.y;
+        let { value } = InsMgr.data.getData("ui"+index);
         let test = this.getNode("test", this.node, Sprite)
         test.spriteFrame = value;
         this.objdata.spriteItem = test.spriteFrame;
@@ -102,6 +103,13 @@ export class SelectColorMgr extends BaseUI {
             this.clickColor(event, zeroPos, maxPos);
         }, this);
 
+        this.target.node.on(Node.EventType.TOUCH_END, (event) => {
+            
+        }, this);
+        this.target.node.on(Node.EventType.TOUCH_CANCEL, (event) => {
+          
+        }, this);
+
         InsMgr.tool.reBtnCall(this.getNode("reBtn"), () => {
             this.saveData()
             if (this.target) {
@@ -134,30 +142,32 @@ export class SelectColorMgr extends BaseUI {
             let selectColor = this.baseColor[this.selectIndex];
             let x_1 = FIX_ITEM_WIDTH - 1 - y
             let y_1 = x;
-            let result = x_1 >= 0 && y_1 >= 0 && x_1 < this.colors.length && y_1 < this.colors[0].length;
+            let result = x_1 >= 0 && y_1 >= 0 && x_1 < this.colors.length && y_1 < this.colors[x_1].length;
             if (!result) {
                 return;
             }
-            let confrim = this.colors[x_1][x];
+            let confrim = this.colors[x_1][y_1];
             if (selectColor._val == confrim._val) {
                 if (this.targetColors[x_1][y_1]._val != confrim._val) {
                     this.count--
-                    this.countLabel.string = `当前选项个数${this.writeCount}\r\n`+`剩余个数：${this.count}`;
+                    this.countLabel.string = `当前选项个数：${this.writeCount}\r\n`+`剩余个数：${this.count}`;
                     this.targetColors[x_1][y_1] = confrim;
                     if (this.colorLabel[x_1][y_1]) {
                         this.colorLabel[x_1][y_1].destroy();
                         this.colorLabel[x_1][y_1] = null;
                     }
+                    this.writeBox();
                     this.updateColor();
                 } else {
                     if (this.colorLabel[x_1][y_1]) {
                         this.colorLabel[x_1][y_1].destroy();
                         this.colorLabel[x_1][y_1] = null;
                         this.count--
-                        this.countLabel.string = `当前选项个数${this.writeCount}\r\n`+`剩余个数：${this.count}`;
+                        this.countLabel.string = `当前选项个数：${this.writeCount}\r\n`+`剩余个数：${this.count}`;
+                        this.writeBox();
                     }
                 }
-                this.writeBox();
+              
             } else {
                 console.error("请选择正确的颜色");
             }
@@ -241,7 +251,7 @@ export class SelectColorMgr extends BaseUI {
             }
         }
         this.count = FIX_ITEM_HEIGHT * FIX_ITEM_HEIGHT - finishCount;
-        this.countLabel.string = `当前选项个数${this.writeCount}\r\n`+`剩余个数：${this.count}`;
+        this.countLabel.string = `当前选项个数：${this.writeCount}\r\n`+`剩余个数：${this.count}`;
     }
 
 
@@ -310,12 +320,12 @@ export class SelectColorMgr extends BaseUI {
             let pos = v3(50 + i * 100, 0, 0);
             node.position = pos;
             if (i === 0) this.selctBox.position = pos;
-            let sprite = node.getComponent(Sprite);
+            let sprite = this.getNode("box",node,Sprite)
             sprite.color = color
             let label = this.getNode("Label", node, Label);
             label.string = (i + 1).toString();
             label.color = this.getContrastRatio(color);
-            sprite.node["tag"] = i;
+            node["tag"] = i;
             node.on('click', (btn) => {
                 let tnode = btn.node as Node;
                 this.selectIndex = tnode["tag"];
@@ -334,8 +344,8 @@ export class SelectColorMgr extends BaseUI {
     writeBox() {
         let list = this.getCurrentColor(this.selectIndex);
         this.writeCount=list.length;
-        this.graphics_Write.initData(list, this.alone, this.contentSize,this.colors);
-        this.countLabel.string = `当前选项个数${this.writeCount}\r\n`+`剩余个数：${this.count}`;
+        this.graphics_Write.initData(list, this.alone, this.contentSize);
+        this.countLabel.string = `当前选项个数：${this.writeCount}\r\n`+`剩余个数：${this.count}`;
     }
 
     getContrastRatio(backgroundRgb) {
@@ -442,7 +452,8 @@ export class SelectColorMgr extends BaseUI {
         return tempIndex;
     }
 
-    autoStroke() {
+    // 是否自动完成所有的色块
+    autoStroke(state=false) {
         let lenx = FIX_ITEM_WIDTH, leny = FIX_ITEM_HEIGHT;
         let selectColor = this.baseColor[this.selectIndex];
         let temp_array = []
@@ -458,13 +469,15 @@ export class SelectColorMgr extends BaseUI {
         let tempId = setInterval(() => {
             if (index >= temp_array.length) {
                 clearInterval(tempId);
-                this.selectIndex++;
-                if (this.selectIndex < this.tempColorList.length) {
-                    let tnode = this.tempColorList[this.selectIndex]
-                    this.selctBox.position = tnode.position;
-                    this.autoStroke();
-                } 
                 this.graphics_Write.clear(); 
+                if(state){
+                    this.selectIndex++;
+                    if (this.selectIndex < this.tempColorList.length) {
+                        let tnode = this.tempColorList[this.selectIndex]
+                        this.selctBox.position = tnode.position;
+                        this.autoStroke();
+                    } 
+                }
                 return;
             }
             let { color, i, j } = temp_array[index++];
@@ -483,7 +496,6 @@ export class SelectColorMgr extends BaseUI {
                     this.colorLabel[i][j] = null;
                     this.count--
                     this.writeBox();
-                
                 }
             }
         }, 5)

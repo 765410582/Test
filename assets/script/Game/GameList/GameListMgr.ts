@@ -24,7 +24,7 @@ export class GameListMgr extends BaseUI {
     }
     
     addData() {
-        let dataArray = [UIID.HeroTest,UIID.GravityRollerCoaster,UIID.Tetris,UIID.SelectColor];
+        let dataArray = [UIID.HeroTest,UIID.GravityRollerCoaster,UIID.Tetris,UIID.ColorList];
         let result = InsMgr.data.getQueryData(item => item.key.indexOf("ui") != -1)
         for (let i = 0; i < result.length; i++) {
             let param = {type: dataArray[i],itemIndex: i,

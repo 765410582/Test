@@ -61,10 +61,41 @@ export class GameTime extends Component {
         this._time =v
         if(this._update_time!=parseInt(this._time.toString())){
             this._update_time= parseInt(this._time.toString())
-            this.timeLabel.string=l10n.t("time")+this._update_time+"s"
+            // this.timeLabel.string=l10n.t("time")+this._update_time+"s"
+            this.updateCountdown() ;
         }
         this.updateOtherTime();
     }
+
+    updateCountdown() {
+        const now = new Date(); // 当前时间
+        const target = new Date();
+        
+        // 设置目标时间为今天的零点
+        target.setHours(24, 0, 0, 0);
+      
+        // 计算剩余时间
+        let remainingTime = target.getTime() - now.getTime();
+      
+        // 如果已过零点，则重新设置为第二天零点
+        if (remainingTime <= 0) {
+          target.setDate(target.getDate() + 1);
+          remainingTime = target.getTime() - now.getTime();
+        }
+      
+        // 计算剩余的小时、分钟和秒
+        const hours = Math.floor(remainingTime / (1000 * 60 * 60));
+        const minutes = Math.floor((remainingTime % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((remainingTime % (1000 * 60)) / 1000);
+      
+        // 格式化输出
+        const countdown = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;//
+      
+        // 显示倒计时
+        // console.log(countdown);
+
+        this.timeLabel.string = countdown
+      }
 }
 
 
