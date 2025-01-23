@@ -1,10 +1,9 @@
 import { _decorator, Asset, assetManager, Component, Label, Node, Prefab, ProgressBar, SpriteFrame, Texture2D } from 'cc';
 
 import { InsMgr } from '../../frame/InsMgr';
-import { UIConfigData, UIID } from '../../main/ViewConfig';
+import {  UIID } from '../../main/ViewConfig';
 
 import { l10n } from 'db://localization-editor/l10n'
-import { NetWorkInfo } from '../../TestMain';
 import { BaseUI } from '../../frame/ui/BaseUI';
 const loadData = [
     { path: "prefab", type: Prefab, dec: "预制体", handle: "bundleA" }, 
@@ -46,7 +45,7 @@ export class LoadingMgr extends BaseUI {
     }
 
     private login() {
-        InsMgr.data.print();
+        // InsMgr.data.print();
         InsMgr.layer.show(UIID.GameList, null, () => {
             InsMgr.layer.hide(UIID.Loading);
             InsMgr.layer.hide(UIID.NetLoading);

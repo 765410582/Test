@@ -22,6 +22,13 @@ export class DataDictionary extends Component {
         return null;
     }
 
+    setLocalData(key, value){
+        localStorage.setItem(key,value)
+    }
+    getLocalData(key){
+        return localStorage.getItem(key)
+    }
+
     getUserProperty<T, K extends keyof T>(user: T | null | undefined, key: K): T[K] {
         if (user === null || user === undefined)
             return null;

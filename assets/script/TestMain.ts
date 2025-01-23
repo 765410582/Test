@@ -18,11 +18,20 @@ interface GameData {
 }
 
 
-export enum NetWorkInfo {
-  loginReq,
-  loginRes,
-}
 
+
+export const Code={
+  loginReq: 1,
+  loginRes: 2,
+  QuitReq: 3,
+  QuitRes: 4,
+  TetrisReq: 5,
+  TetrisRes: 6,
+  TetrisMessage: 7,
+  ExitTetrisReq: 8,
+  ExitTetrisRes: 9,
+
+}
 const { ccclass, property } = _decorator;
 @ccclass('TestMain')
 export class TestMain extends Component {
@@ -30,22 +39,24 @@ export class TestMain extends Component {
   start() {
     
     InsMgr.event.on(EventType.GameEnd, this.GameEnd);
-    
+    InsMgr.net.connect();
     InsMgr.time.init();
     InsMgr.layer.createUILayer();
     let StartGame=this.node.getChildByPath("StartGame")
     let StartGame_Btn=this.node.getChildByPath("StartGame/Button")
     StartGame_Btn.on('click',()=>{
+      if(!InsMgr.net.isConnect()){
+        alert("请先连接服务器")
+      }
       StartGame.active=false;
       InsMgr.layer.show(UIID.Loading);
     })
 
-    let result=InsMgr.tool.getTimeFormat(0,"HH:mm:ss YYYY-MM-dd ");
-    console.log("result: ",result);
+    
   }
 
   // 确认结束游戏
-  GameEnd(event, data: GameData, status = false) {
+  GameEnd(event, data: GameData, status = true) {
     if (!data) return;
     let { page, suc, fail, param } = data;
     if (status) {

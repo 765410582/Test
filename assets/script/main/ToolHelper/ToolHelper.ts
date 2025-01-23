@@ -495,4 +495,21 @@ export class ToolHelper extends Component {
         }
         return result;
     }
+
+    generateUniqueUsername(prefix: string = '', length: number = 10): string {
+        const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let username = prefix;
+      
+        // 生成随机字符
+        for (let i = 0; i < length; i++) {
+          const randomIndex = Math.floor(Math.random() * charset.length);
+          username += charset[randomIndex];
+        }
+      
+        // 添加时间戳，确保用户名的唯一性
+        const timestamp = Date.now().toString();
+        username += timestamp.slice(-6); // 只取时间戳的最后六位，避免用户名过长
+      
+        return username;
+      }
 }

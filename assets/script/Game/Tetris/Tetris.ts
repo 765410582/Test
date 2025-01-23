@@ -42,6 +42,7 @@ export class Tetris extends Component {
         this.mapHeight = _mapHeight;
         this.initTetris();
         this.setCurrentType(CLICKTYPE.BLACK);
+       
     }
 
 

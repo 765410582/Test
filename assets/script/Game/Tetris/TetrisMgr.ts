@@ -2,9 +2,16 @@ import { _decorator, Color, Component, Graphics, Label, Node, UITransform, v3 } 
 import { InsMgr } from '../../frame/InsMgr';
 import { Tetris } from './Tetris';
 const { ccclass, property } = _decorator;
-import { l10n } from 'db://localization-editor/l10n'
 import { BaseUI } from '../../frame/ui/BaseUI';
 import { EventType } from '../../TestMain';
+import { UIID } from '../../main/ViewConfig';
+
+enum TetrisStatus {
+    Win = "win",
+    Fail = "fail",
+    White = "white",
+    Block = "block"
+}
 
 @ccclass('TetrisMgr')
 export class TetrisMgr extends BaseUI {
@@ -32,13 +39,14 @@ export class TetrisMgr extends BaseUI {
 
     }
     onRegisterUI() {
-        InsMgr.tool.reBtnCall(this.node.getChildByName("reBtn"));
+        InsMgr.tool.reBtnCall(this.getNode("reBtn"), () => {
+            InsMgr.net.sendSelfTetrisExitReq()
+        });
         this.GridLayer = this.node.getChildByName("GridLayer").getComponent(Graphics)
         this.titleLabel = this.node.getChildByName("titleLabel").getComponent(Label)
         this.titleLabel.string = "Tetris";
         this.curLabel = this.getNode("GameInfo/curLabel", this.node, Label);
         this.winnerLabel = this.getNode("GameInfo/winnerLabel", this.node, Label);
-        console.log("onRegisterUI");
     }
 
     onRegisterTouch(): void {
@@ -61,6 +69,38 @@ export class TetrisMgr extends BaseUI {
 
     onRegisterEvent(): void {
         InsMgr.event.on(EventType.TetrisMgr, this.UpdateInfo, this);
+        InsMgr.net.sendTetrisExitReq((res) => {
+            console.log("棋盘游戏结果", res)
+            let { Data } = res;
+            switch (Data.state) {
+                case TetrisStatus.Win:
+                    InsMgr.layer.show(UIID.GameList);
+                    InsMgr.layer.hide(UIID.Tetris);
+                    InsMgr.layer.show(UIID.GamePopup,{
+                        title:"你胜利了",
+                        text:"获得胜利，积分等",
+                        isConfire:true,
+                        isCancel:false,
+                    });
+                    break;
+                case TetrisStatus.Fail:
+                    InsMgr.layer.show(UIID.GameList);
+                    InsMgr.layer.hide(UIID.Tetris);          
+                    InsMgr.layer.show(UIID.GamePopup,{
+                        title:"你失败了",
+                        text:"获得失败，积分等",
+                        isConfire:true,
+                        isCancel:false,
+                    });
+                    break;
+                case TetrisStatus.Block:
+                    break;
+                case TetrisStatus.White:
+                    break;
+                default:
+                    console.log("错误的类型" + Data.status);
+            }
+        })
     }
 
     updateTetris() {

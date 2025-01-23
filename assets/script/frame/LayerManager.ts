@@ -36,7 +36,7 @@ export class LayerManager extends Component {
     async show<T extends UIID>(name: T, param = null, cb: Function = null) {
         let layer1 = this.has(name);
         if (layer1) {
-            console.warn("layer is exits");
+            console.warn("layer is exits",name);
             return;
         }
         let element = UIConfigData[name]

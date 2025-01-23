@@ -1,4 +1,6 @@
 import { _decorator, Component, director, Label, Node } from 'cc';
+import { InsMgr } from './InsMgr';
+import { Code } from '../TestMain';
 const { ccclass, property } = _decorator;
 
 @ccclass('WebSocketClient')
@@ -8,6 +10,8 @@ export class WebSocketClient {
     private reconnectInterval: number;
     private maxReconnectAttempts: number;
     private reconnectAttempts: number = 0;
+    public  backCall:Function = null;
+    public  reqMap= new Map();
 
     constructor(url: string, reconnectInterval = 5000, maxReconnectAttempts = 10) {
         this.url = url;
@@ -28,6 +32,7 @@ export class WebSocketClient {
             console.log("Connected to WebSocket server.");
             console.log("已经建立连接");
             this.reconnectAttempts = 0;
+            this.sendLoginReq();
         };
 
         this.ws.onmessage = (event: MessageEvent) => {
@@ -46,6 +51,8 @@ export class WebSocketClient {
             console.error("WebSocket encountered an error:", error);
         };
     }
+
+    
 
     // 重连方法
     private reconnect() {
@@ -72,11 +79,81 @@ export class WebSocketClient {
 
     // 接收消息处理
     protected onMessage(data: string) {
-        // console.log("Received message:", data);
+        
+        let tdata= JSON.parse(data);
+        console.log("接受消息",tdata);
+        if(tdata.Status!=0){
+            this.dataError(tdata);
+            return;
+        }
+        let result=this.reqMap.has(tdata.Code);
+        if(result){
+            let tcall=this.reqMap.get(tdata.Code);
+            if(typeof tcall=="function"){
+                tcall(tdata);
+            }
+        }
+        
+        console.log("Received message:", data);
     }
+
+
+    dataError(err) {
+        console.error("WebSocket error:", err);
+    }
+
+    // 是否连接
+    /**
+     * name
+     */
+    public isConnect() {
+        let result=false;
+        if (this.ws.readyState === WebSocket.CONNECTING) {
+            console.log("WebSocket 正在连接...");
+          } else if (this.ws.readyState === WebSocket.OPEN) {
+            console.log("WebSocket 已连接.");
+            result=true;
+          } else if (this.ws.readyState === WebSocket.CLOSING) {
+            console.log("WebSocket 正在关闭...");
+          } else if (this.ws.readyState === WebSocket.CLOSED) {
+            console.log("WebSocket 已关闭.");
+          }
+        return result;
+    }
+    //================================================================================
+    //登录 
+    sendLoginReq(){
+        let userinfo:object=InsMgr.data.getData("UserInfo");
+        if(!userinfo){
+            let username= InsMgr.tool.generateUniqueUsername('user_', 8);
+            userinfo={username:username,password:"123456"};
+            InsMgr.data.setData("UserInfo",userinfo);
+        }
+        let data=Object.assign({Code:Code.loginReq},userinfo)
+        InsMgr.net.sendMessage(JSON.stringify(data))
+        this.reqMap.set(Code.loginRes, (data)=>{
+            console.log("登录成功",data);
+        });
+    }
+    // 发送匹配
+    sendTetrisReq(backCall) {
+        let data={Code:Code.TetrisReq}
+        this.ws.send(JSON.stringify(data));
+        this.reqMap.set(Code.TetrisRes, backCall);
+    }
+
+    // 退出围棋
+    sendSelfTetrisExitReq(backCall=null) {
+        let data={Code:Code.ExitTetrisReq}
+        this.ws.send(JSON.stringify(data));
+        this.reqMap.set(Code.ExitTetrisRes, backCall);
+    }
+
+    //接受围棋结果处理
+    sendTetrisExitReq(backCall){
+        this.reqMap.set(Code.TetrisMessage, backCall);
+    }
+
+
+
 }
-
-
-// InsMgr.net.connect();
-// let login={cmd:NetWorkInfo.loginReq,username:"test",password:"123456"}
-// InsMgr.net.sendMessage(JSON.stringify(login))
