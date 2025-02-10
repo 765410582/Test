@@ -1,6 +1,7 @@
 import { _decorator, Component, director, Label, Node } from 'cc';
 import { InsMgr } from './InsMgr';
-import { Code } from '../TestMain';
+import { Code, StatusEnum } from '../TestMain';
+import { GameInfo } from '../GameInfo';
 const { ccclass, property } = _decorator;
 
 @ccclass('WebSocketClient')
@@ -10,8 +11,8 @@ export class WebSocketClient {
     private reconnectInterval: number;
     private maxReconnectAttempts: number;
     private reconnectAttempts: number = 0;
-    public  backCall:Function = null;
-    public  reqMap= new Map();
+    public backCall: Function = null;
+    public reqMap = new Map();
 
     constructor(url: string, reconnectInterval = 5000, maxReconnectAttempts = 10) {
         this.url = url;
@@ -32,7 +33,7 @@ export class WebSocketClient {
             console.log("Connected to WebSocket server.");
             console.log("已经建立连接");
             this.reconnectAttempts = 0;
-            this.sendLoginReq();
+           
         };
 
         this.ws.onmessage = (event: MessageEvent) => {
@@ -52,7 +53,7 @@ export class WebSocketClient {
         };
     }
 
-    
+
 
     // 重连方法
     private reconnect() {
@@ -79,27 +80,35 @@ export class WebSocketClient {
 
     // 接收消息处理
     protected onMessage(data: string) {
-        
-        let tdata= JSON.parse(data);
-        console.log("接受消息",tdata);
-        if(tdata.Status!=0){
+
+        let tdata = JSON.parse(data);
+        console.log("接受消息", tdata);
+        if (tdata.Status != 0) {
             this.dataError(tdata);
             return;
         }
-        let result=this.reqMap.has(tdata.Code);
-        if(result){
-            let tcall=this.reqMap.get(tdata.Code);
-            if(typeof tcall=="function"){
+        let result = this.reqMap.has(tdata.Code);
+        if (result) {
+            let tcall = this.reqMap.get(tdata.Code);
+            if (typeof tcall == "function") {
                 tcall(tdata);
             }
         }
-        
+
         console.log("Received message:", data);
     }
 
 
     dataError(err) {
         console.error("WebSocket error:", err);
+        switch (err.Status) {
+            case StatusEnum.LoginFail:
+                console.error("登录失败");
+                alert("登录失败");
+                break;
+            default:
+                console.error("未知错误");
+        }
     }
 
     // 是否连接
@@ -107,53 +116,63 @@ export class WebSocketClient {
      * name
      */
     public isConnect() {
-        let result=false;
+        let result = false;
         if (this.ws.readyState === WebSocket.CONNECTING) {
             console.log("WebSocket 正在连接...");
-          } else if (this.ws.readyState === WebSocket.OPEN) {
+        } else if (this.ws.readyState === WebSocket.OPEN) {
             console.log("WebSocket 已连接.");
-            result=true;
-          } else if (this.ws.readyState === WebSocket.CLOSING) {
+            result = true;
+        } else if (this.ws.readyState === WebSocket.CLOSING) {
             console.log("WebSocket 正在关闭...");
-          } else if (this.ws.readyState === WebSocket.CLOSED) {
+        } else if (this.ws.readyState === WebSocket.CLOSED) {
             console.log("WebSocket 已关闭.");
-          }
+        }
         return result;
     }
     //================================================================================
-    //登录 
-    sendLoginReq(){
-        let userinfo:object=InsMgr.data.getData("UserInfo");
-        if(!userinfo){
-            let username= InsMgr.tool.generateUniqueUsername('user_', 8);
-            userinfo={username:username,password:"123456"};
-            InsMgr.data.setData("UserInfo",userinfo);
-        }
-        let data=Object.assign({Code:Code.loginReq},userinfo)
-        InsMgr.net.sendMessage(JSON.stringify(data))
-        this.reqMap.set(Code.loginRes, (data)=>{
-            console.log("登录成功",data);
-        });
+    // 注册
+    sendRegisterReq(data,backCall) {
+        InsMgr.net.sendMessage(JSON.stringify( Object.assign({ Code: Code.regiterReq }, data)))
+        this.reqMap.set(Code.regiterRes,backCall);
     }
+    //登录 
+    sendLoginReq(data,backCall) {
+        // let userinfo: object = InsMgr.data.getData("UserInfo");
+        // if (!userinfo) {
+        //     let username = InsMgr.tool.generateUniqueUsername('user_', 8);
+        //     userinfo = { name: username, password: "123456" };
+        //     InsMgr.data.setData("UserInfo", userinfo);
+        // }
+        
+        InsMgr.net.sendMessage(JSON.stringify( Object.assign({ Code: Code.loginReq }, data)))
+        this.reqMap.set(Code.loginRes,backCall);
+    }
+
     // 发送匹配
     sendTetrisReq(backCall) {
-        let data={Code:Code.TetrisReq}
+        let data = { Code: Code.TetrisReq }
         this.ws.send(JSON.stringify(data));
         this.reqMap.set(Code.TetrisRes, backCall);
     }
 
     // 退出围棋
-    sendSelfTetrisExitReq(backCall=null) {
-        let data={Code:Code.ExitTetrisReq}
+    sendSelfTetrisExitReq(backCall = null) {
+        let data = { Code: Code.ExitTetrisReq }
         this.ws.send(JSON.stringify(data));
         this.reqMap.set(Code.ExitTetrisRes, backCall);
     }
 
     //接受围棋结果处理
-    sendTetrisExitReq(backCall){
+    sendTetrisExitReq(backCall) {
         this.reqMap.set(Code.TetrisMessage, backCall);
     }
 
+    // 发送DeepSeek 查询
+    sendDeepSeekReq(message,backCall) {
+        let data = { Code: Code.DeepseekReq,Data:message }
+        this.ws.send(JSON.stringify(data));
+        this.reqMap.set(Code.DeepseekRes, backCall);
+    }
 
 
 }

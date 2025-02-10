@@ -1,5 +1,4 @@
 import { _decorator, Component, instantiate, Node, Prefab } from 'cc';
-import { BaseUI } from '../frame/ui/BaseUI';
 const { ccclass, property } = _decorator;
 @ccclass('ListView')
 export class ListView extends Component {
@@ -31,7 +30,7 @@ export class ListView extends Component {
 
 
     updateData(item,data){
-        let temp_ts=item.getComponent(this.TsScript) as BaseUI
+        let temp_ts=item.getComponent(this.TsScript)
         temp_ts.onInit(data,()=>{
             console.log("初始化完成");
         })

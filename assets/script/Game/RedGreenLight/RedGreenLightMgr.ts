@@ -1,73 +1,77 @@
-import { _decorator, Color, Component, Label, Node, Sprite } from 'cc';
+import { _decorator, Color, Component, EditBox, Label, Node, RichText, ScrollView, Sprite } from 'cc';
 import { TrafficLight } from './TrafficLight';
 import { InsMgr } from '../../frame/InsMgr';
+import { BaseUI } from '../../frame/ui/BaseUI';
 
 
 const { ccclass, property } = _decorator;
 
 @ccclass('RedGreenLightMgr')
-export class RedGreenLightMgr extends Component {
-    light: TrafficLight = null;
-    list;
-    numLabel: Label[] = [];
-    init(data?) {
-        const lightData = [
-            { color: Color.RED, last: 20000 },
-            { color: Color.YELLOW, last: 2000 },
-            { color: Color.GREEN, last: 15000 },
-            { color: Color.YELLOW, last: 2000 },
-        ]
-        this.light = new TrafficLight(lightData);
-        let dir = ["up", "left", "down", "right"]
-        this.list = new Array();
-        for (let j = 0; j < dir.length; j++) {
-            this.list[j] = new Array();
-            for (let i = 1; i < 4; i++) {
-                let node = this.node.getChildByPath(dir[j] + "/item" + i).getComponent(Sprite);
-                this.list[j].push(node)
-            }
-            this.numLabel.push(this.node.getChildByPath(dir[j] + "/numLabel").getComponent(Label));
-        }
-
-
-        InsMgr.tool.reBtnCall(this.node.getChildByName("reBtn"));
-        this.updateTime(0);
-        this.schedule(this.updateTime, 0.5);
+export class RedGreenLightMgr extends BaseUI {
+    editBox: EditBox;
+    submit: Node;
+    richText: RichText;
+    tempCount: number;
+    deepSeekArray: Array<Object> = [];
+    callback: Function;
+    index: number = 0;
+    onStart() {
     }
 
-    updateTime(deltaTime: number) {
-        let { color, reman } = this.light.getTrafficLight();
-        for (let j = 0; j < this.list.length; j++) {
-            let temp = this.list[j];
-            if (j == 0 || j == 2) {
-                this.updateLightColor(temp, color, j)
-            } else {
-                let tempColor = color;
-                if (color == Color.RED) {
-                    tempColor = Color.GREEN;
-                } else if (color == Color.GREEN) {
-                    tempColor = Color.RED;
-                }
-                this.updateLightColor(temp, tempColor, j)
+
+    onRegisterUI(): void {
+        this.editBox = this.getNode("EditBox", this.node, EditBox)
+        this.richText = this.getNode("ScrollView/view/content/RichText", this.node, RichText);
+    }
+
+    onRegisterEvent(): void {
+        InsMgr.tool.reBtnCall(this.getNode("reBtn"), () => {
+            console.log("退出成功");
+        });
+        this.getNode("Submit").on("click", () => {
+            let str = this.editBox.string;
+            this.typeWriter(this.richText, str, 20, true);
+            this.deepSeekArray.push(str);
+            this.find(str);
+        })
+    }
+
+
+    find(str) {
+        InsMgr.net.sendDeepSeekReq(str, (message) => {
+            let { Data } = message;
+            this.deepSeekArray.push(Data);
+            console.log("Data");
+            // this.typeWriter(this.richText, Data, 100);
+            if (this.deepSeekArray.length <= 100) {
+                const tempStr = "刚才小说第" + this.index++ + "章"
+                this.find(tempStr);
             }
-            this.numLabel[j].string = Math.ceil(reman / 1000).toString();
+        })
+    }
+    typeWriter(richText: RichText, message: string, speed: number, temp: boolean = false) {
+        // let i = 0;
+        // if (!richText) return;
+        // let repalce = "\r\n"
+        // richText.string += repalce;
+        // const interval = setInterval(() => {
+        //     richText.string += message[i];
+        //     i++;
+        //     if (i === message.length) {
+        //         clearInterval(interval);//清除定时器，结束打字滚动
+        //     }
+        // }, speed)
+        if (this.deepSeekArray.length > 1) {
+            let repalce = "\r\n"
+            richText.string += repalce;
         }
+        richText.string += message.toString();
+    }
+    unRegister() {
 
     }
 
-    updateLightColor(temp, color, j) {
-        for (let i = 0; i < temp.length; i++) {
-            let item = temp[i];
-            if (color == Color.RED && i == 0 || color == Color.YELLOW && i == 1 || color == Color.GREEN && i == 2) {
-                item.color = color;
-                this.numLabel[j].node.position = item.node.position;
-                this.numLabel[j].color = InsMgr.tool.getInverseColor(color);
-            } else {
-                item.color = Color.GRAY;
-            }
-        }
-        
-    }
+
 }
 
 

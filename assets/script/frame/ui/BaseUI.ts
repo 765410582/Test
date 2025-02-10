@@ -22,6 +22,9 @@ export abstract  class BaseUI extends Component {
         this.onRegisterEvent();
         
     }
+    constructor() {
+        super();
+    }
     /**
      * Get a node or is component by path.
      * This method searches for the node in the current node and its children.

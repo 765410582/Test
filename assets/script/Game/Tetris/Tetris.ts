@@ -291,7 +291,6 @@ export class Tetris extends Component {
  calculateScore(board:any[][], blackCaptures: number, whiteCaptures: number, komi: number =0): GameResult {
   let blackTerritory = 0;
   let whiteTerritory = 0;
-
   // 遍历棋盘，统计地盘
   for (let i = 0; i < board.length; i++) {
     for (let j = 0; j < board[i].length; j++) {
@@ -319,6 +318,5 @@ export class Tetris extends Component {
   };
 }
 }
-
 
 

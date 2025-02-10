@@ -2,12 +2,12 @@
   "ver": "1.1.43",
   "importer": "prefab",
   "imported": true,
-  "uuid": "be87e5cd-a007-4e2a-8fbb-ee8099993606",
+  "uuid": "ec86dbf6-fb48-4f28-878f-0f4def4c3499",
   "files": [
     ".json"
   ],
   "subMetas": {},
   "userData": {
-    "syncNodeName": "RedGreenLight"
+    "syncNodeName": "GameLogin"
   }
 }

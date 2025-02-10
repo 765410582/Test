@@ -5,10 +5,6 @@ import { SVGUtil } from './svg/util/SVGUtil';
 import { SVGPraser } from './svg/SVGPraser';
 
 import { getChineseCharacterMeaning } from './ChineseCharacter';
-import { EventType } from '../../TestMain';
-import { EventMgr } from '../../frame/EventMgr';
-
-import { LayerManager } from '../../frame/LayerManager';
 import { UIID } from '../../main/ViewConfig';
 import { InsMgr } from '../../frame/InsMgr';
 import { BaseUI } from '../../frame/ui/BaseUI';

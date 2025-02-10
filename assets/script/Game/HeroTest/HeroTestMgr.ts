@@ -9,8 +9,7 @@ import { ButtletMgr } from './buttlet/ButtletMgr';
 import { hurt } from './hurt';
 import { ObjectPoolMgr, PoolType } from '../../frame/ObjectPoolMgr';
 import { Laser } from './att/Laser';
-import { BaseUI } from '../../frame/ui/BaseUI';
-const { ccclass, property } = _decorator;
+import {BaseUI} from '../../frame/ui/BaseUI';
 const GameData = {
     hero: {
         "1001": {
@@ -83,10 +82,7 @@ export enum HeroEvent {
     HURT = "HURT",
     UDPATEPOOL = "UDPATEPOOL"
 }
-@ccclass('HeroTestMgr')
 export class HeroTestMgr extends BaseUI {
-    
-
     enemyList: Node[] = [];
     hero: Node;
     dieEnemy: number = 0;
@@ -98,7 +94,6 @@ export class HeroTestMgr extends BaseUI {
     buttletEffect = [];
     showEfect = [];
     laset: any;
-
     onRegisterUI(): void {
         InsMgr.tool.reBtnCall(this.getNode("reBtn"), (state) => {
             if (state) {

@@ -1,6 +1,5 @@
 import { _decorator, Component, Node, v3 } from 'cc';
 import { InsMgr } from '../../frame/InsMgr';
-import { TimeType } from '../../frame/GameTime';
 import { HeroEvent } from './HeroTestMgr';
 
 const { ccclass, property } = _decorator;

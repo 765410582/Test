@@ -1,6 +1,5 @@
 import { _decorator, assetManager, Color, Component, instantiate, Label, Node, ScrollView, SpriteFrame, view } from 'cc';
 import { itemPrefab } from './itemPrefab';
-import { LayerManager } from '../../frame/LayerManager';
 import { UIID } from '../../main/ViewConfig';
 import { InsMgr } from '../../frame/InsMgr';
 import { l10n } from 'db://localization-editor/l10n'
@@ -12,6 +11,7 @@ export class GameListMgr extends BaseUI {
     scorllNode: Node;
     item: Node;
     scrollListCtrl: ScrollView;
+
     onRegisterUI(){
         this.scorllNode = this.getNode("ScrollView"); 
         this.item =this.getNode("Item"); 
@@ -24,9 +24,9 @@ export class GameListMgr extends BaseUI {
     }
     
     addData() {
-        let dataArray = [UIID.HeroTest,UIID.GravityRollerCoaster,UIID.WaitingMatch,UIID.ColorList];
+        let dataArray = [UIID.HeroTest,UIID.GravityRollerCoaster,UIID.WaitingMatch,UIID.ColorList,UIID.RedGreenLight];
         let result = InsMgr.data.getQueryData(item => item.key.indexOf("ui") != -1)
-        for (let i = 0; i < result.length; i++) {
+        for (let i = 0; i < dataArray.length; i++) {
             let param = {type: dataArray[i],itemIndex: i,
                 cb: (data, index, spriteFrame) => {
                     this.itemCb(Object.assign(data, { index: index, background: spriteFrame}))

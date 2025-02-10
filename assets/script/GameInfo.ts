@@ -29,6 +29,8 @@ export class GameInfo {
    private gameStatus: GameStatus = GameStatus.None;
    private gameResult: GameResult = GameResult.None;
    private gameData: GameData = null;
+   private _gameLogin:boolean = false;
+
 
    public isPause(): boolean {
       return this.gameStatus == GameStatus.GAME_PAUSE;
@@ -55,7 +57,13 @@ export class GameInfo {
    public getData(): GameData {
       return this.gameData;
    }
+   public get LoginStatus():boolean{
+      return this._gameLogin;
+   }
 
+   public set LoginStatus(status:boolean){
+      this._gameLogin = status;
+   }
    public loseGame() {
       this.gameResult = GameResult.GAME_LOSE;
       let tdata = {
