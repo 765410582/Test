@@ -39,7 +39,7 @@
   },
   "dependencies": {
     "chokidar": "^3.4.1",
-    "fix-path": "^3.0.0",
+    "fix-path": "^4.0.0",
     "protobufjs": "^6.10.1",
     "uglify-js": "^3.17.4"
   },
